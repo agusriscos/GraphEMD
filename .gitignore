@@ -19,12 +19,11 @@ build/
 .vscode/
 
 # Datos y artefactos generados (regenerables)
-data/**/*
-!data/README.md
+data/
 outputs/
 scripts/GraphEMD/out/
 scripts/GraphEMD/emdsynth/out/
-scripts/GraphEMD/exploracion/out_msci_world_grafos/
+scripts/GraphEMD/exploration/out_msci_world_grafos/
 
 # Binarios pesados
 *.pt
