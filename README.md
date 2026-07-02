@@ -13,7 +13,6 @@ Código migrado desde [ARPTools](https://github.com/agusriscos/ARPTools) sin mod
 | `scripts/GraphEMD/` | Pipelines del paper: panel empírico, emdsynth, exploración MSCI |
 | `scripts/16dic25/` | Scripts legacy MSCI World (dic-2025) |
 | `analysis/` | Cuadernos Jupyter de experimentos |
-| `docs/` | Informes técnicos LaTeX (`16dic25`, `20abr26`) |
 | `data/` | Datos intermedios (no versionados; ver `data/README.md`) |
 
 ## Instalación
@@ -52,7 +51,7 @@ rsync -a ARPTools/data/GraphEMD/ GraphEMD/data/GraphEMD/
 ## Relación con PAPER
 
 - Figuras del artículo: `../PAPER/figures/`
-- Scripts de póster: `../PAPER/scripts/` (apuntan a `GraphEMD/data/` y `GraphEMD/docs/`)
+- Scripts de póster: `../PAPER/scripts/` (apuntan a `GraphEMD/data/`)
 
 ## Licencia
 
