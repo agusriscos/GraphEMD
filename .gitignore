@@ -21,9 +21,9 @@ build/
 # Datos y artefactos generados (regenerables)
 data/
 outputs/
-scripts/GraphEMD/out/
-scripts/GraphEMD/emdsynth/out/
-scripts/GraphEMD/exploration/out_msci_world_grafos/
+scripts/out/
+scripts/emdsynth/out/
+scripts/exploration/out_msci_world_grafos/
 
 # Binarios pesados
 *.pt

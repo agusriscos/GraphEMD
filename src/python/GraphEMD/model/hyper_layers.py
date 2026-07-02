@@ -17,7 +17,7 @@ class HyperConvLayer(torch.nn.Module):
         ):
             self.set_convolution_layer(conv_layer, **convolution_kwargs)
         else:
-            raise ValueError("Tipo de capa no soportada.")
+            raise ValueError("Unsupported layer type.")
 
     def set_convolution_layer(self, convolution_type: pyg.nn.MessagePassing, **convolution_kwargs):
         kw = {
@@ -38,7 +38,7 @@ class HyperActivationLayer(torch.nn.Module):
         if issubclass(activation_layer, (torch.nn.ReLU, torch.nn.PReLU, torch.nn.Sigmoid, torch.nn.GELU)):
             self.activation_layer = activation_layer()
         else:
-            raise ValueError("Tipo de capa no soportada.")
+            raise ValueError("Unsupported layer type.")
 
     def forward(self, data: Union[torch.Tensor, pyg.data.Batch, pyg.data.Data]) -> torch.Tensor:
         if isinstance(data, torch.Tensor):
@@ -67,7 +67,7 @@ class HyperAggregationLayer(torch.nn.Module):
         if aggregation_type in self.get_aggregation_dict.keys():
            self.aggr = self.get_aggregation_dict[aggregation_type]
         else:
-            raise ValueError("Tipo de agregación no soportada.")
+            raise ValueError("Unsupported aggregation type.")
 
     @staticmethod
     def get_aggregation_layer(aggregation_layer: pyg.nn.Aggregation, **aggregation_kwargs):

@@ -1,8 +1,8 @@
 """
-Módulo GraphEMD.data: utilidades pandas y dataloader PyTorch.
+GraphEMD.data module: pandas utilities and PyTorch dataloader.
 
-VisualGraphDataloader se importa directamente; el resto de nombres se cargan
-bajo demanda para evitar cargar pandas_datareader cuando solo se usa el dataloader.
+VisualGraphDataloader is imported directly; other names are loaded on demand
+to avoid importing pandas_datareader when only the dataloader is needed.
 """
 from .torch_utils import VisualGraphDataloader
 
@@ -29,7 +29,7 @@ _PANDAS_UTILS_NAMES = frozenset(
 
 
 def __getattr__(name: str):
-    """Carga perezosa de pandas_utils para no importar pandas_datareader si no hace falta."""
+    """Lazy-load pandas_utils to avoid importing pandas_datareader when unnecessary."""
     if name in _PANDAS_UTILS_NAMES:
         from .pandas_utils import (
             download_dcoilwtico,

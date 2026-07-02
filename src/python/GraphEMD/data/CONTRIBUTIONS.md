@@ -1,155 +1,155 @@
-# Guía para Añadir una Nueva Transformación de IMF a Grafo
+# Guide for Adding a New IMF-to-Graph Transformation
 
-Esta guía explica los pasos necesarios para añadir una nueva transformación de Intrinsic Mode Function (IMF) a grafo en el proyecto GraphEMD.
+This guide explains the steps required to add a new Intrinsic Mode Function (IMF) to graph transformation in the GraphEMD project.
 
-## Estructura del Proyecto
+## Project Structure
 
-El proyecto actualmente soporta tres tipos de transformaciones:
-- **HVG (Horizontal Visibility Graph)**: Implementado en `obtener_grafo_hvg_imf()`
-- **NVG (Natural Visibility Graph)**: Implementado en `obtener_grafo_nvg_imf()`
-- **Grafo de Recurrencia**: Implementado en `obtener_grafo_recurrencia_imf()`
+The project currently supports three types of transformations:
+- **HVG (Horizontal Visibility Graph)**: Implemented in `build_hvg_imf_graph()`
+- **NVG (Natural Visibility Graph)**: Implemented in `build_nvg_imf_graph()`
+- **Recurrence Graph**: Implemented in `build_recurrence_imf_graph()`
 
-Todas las transformaciones están en el archivo:
+All transformations are in the file:
 ```
 src/python/GraphEMD/data/graph_imf_transform_utils.py
 ```
 
-## Pasos para Añadir una Nueva Transformación
+## Steps to Add a New Transformation
 
-### Paso 1: Implementar la Función de Transformación
+### Step 1: Implement the Transformation Function
 
-Crea una nueva función en `graph_imf_transform_utils.py` que siga el patrón de las funciones existentes.
+Create a new function in `graph_imf_transform_utils.py` that follows the pattern of the existing functions.
 
-#### Estructura Base de la Función
+#### Base Function Structure
 
 ```python
-def obtener_grafo_nuevo_tipo_imf(
+def build_new_type_imf_graph(
     archivo_imfs: str,
     id_imf: str,
-    # Añade aquí parámetros específicos de tu transformación
+    # Add transformation-specific parameters here
 ) -> Data:
     """
-    Transforma una IMF a grafo [NOMBRE_DEL_TIPO] y retorna un objeto Data de PyTorch Geometric.
+    Transforms an IMF into a [GRAPH_TYPE_NAME] graph and returns a PyTorch Geometric Data object.
 
-    [Descripción detallada de lo que hace la transformación]
+    [Detailed description of what the transformation does]
 
     Parameters
     ----------
     archivo_imfs : str
-        Ruta al archivo parquet con las IMFs (debe contener columnas IMF_1, IMF_2, etc.).
+        Path to the parquet file with IMFs (must contain columns IMF_1, IMF_2, etc.).
     id_imf : str
-        Identificador de la IMF a transformar (ej: "IMF_1", "IMF_2", "Residuo").
-    # Documenta aquí los parámetros específicos de tu transformación
+        Identifier of the IMF to transform (e.g. "IMF_1", "IMF_2", "Residuo").
+    # Document transformation-specific parameters here
 
     Returns
     -------
     Data
-        Objeto Data de PyTorch Geometric con el grafo [NOMBRE_DEL_TIPO] de la IMF.
+        PyTorch Geometric Data object with the [GRAPH_TYPE_NAME] graph of the IMF.
 
     Examples
     --------
     >>> from pathlib import Path
     >>> proyecto_root = Path(__file__).parent.parent.parent.parent.parent
     >>> archivo_imfs = proyecto_root / "data" / "16dic25" / "msci_world_imfs.parquet"
-    >>> grafo = obtener_grafo_nuevo_tipo_imf(str(archivo_imfs), "IMF_1")
-    >>> print(f"Nodos: {grafo.num_nodes}, Enlaces: {grafo.num_edges}")
+    >>> grafo = build_new_type_imf_graph(str(archivo_imfs), "IMF_1")
+    >>> print(f"Nodes: {grafo.num_nodes}, Edges: {grafo.num_edges}")
     """
-    # 1. Cargar datos de IMFs
-    print(f"Cargando IMFs desde: {archivo_imfs}")
+    # 1. Load IMF data
+    print(f"Loading IMFs from: {archivo_imfs}")
     df_imfs = pd.read_parquet(archivo_imfs, engine="pyarrow")
-    print(f"Shape del DataFrame: {df_imfs.shape}")
-    print(f"Columnas disponibles: {list(df_imfs.columns)}")
+    print(f"DataFrame shape: {df_imfs.shape}")
+    print(f"Available columns: {list(df_imfs.columns)}")
 
-    # 2. Verificar que existe la IMF especificada
+    # 2. Verify that the specified IMF exists
     if id_imf not in df_imfs.columns:
         raise ValueError(
-            f"La IMF '{id_imf}' no existe en el DataFrame. "
-            f"Columnas disponibles: {list(df_imfs.columns)}"
+            f"IMF '{id_imf}' does not exist in the DataFrame. "
+            f"Available columns: {list(df_imfs.columns)}"
         )
 
-    # 3. Extraer la IMF seleccionada
+    # 3. Extract the selected IMF
     imf_valores = np.array(df_imfs[id_imf].values)
-    print(f"\nIMF seleccionada: {id_imf}")
-    print(f"Shape de {id_imf}: {imf_valores.shape}")
+    print(f"\nSelected IMF: {id_imf}")
+    print(f"Shape of {id_imf}: {imf_valores.shape}")
     print(
-        f"Valores - Min: {np.min(imf_valores):.4f}, Max: {np.max(imf_valores):.4f}, "
+        f"Values - Min: {np.min(imf_valores):.4f}, Max: {np.max(imf_valores):.4f}, "
         f"Mean: {np.mean(imf_valores):.4f}"
     )
 
-    # 4. Construir el grafo usando tu algoritmo específico
-    print("\nConstruyendo grafo [NOMBRE_DEL_TIPO]...")
-    # AQUÍ VA TU LÓGICA ESPECÍFICA PARA CONSTRUIR EL GRAFO
-    # Debes obtener:
-    # - nodos: array con los índices de los nodos
-    # - enlaces: array de forma (2, num_edges) o lista de tuplas (source, target)
+    # 4. Build the graph using your specific algorithm
+    print("\nBuilding [GRAPH_TYPE_NAME] graph...")
+    # YOUR SPECIFIC LOGIC TO BUILD THE GRAPH GOES HERE
+    # You must obtain:
+    # - nodos: array with node indices
+    # - edges: array of shape (2, num_edges) or list of tuples (source, target)
 
-    # 5. Convertir a formato PyTorch Geometric
-    print("Convirtiendo a objeto Data de PyTorch Geometric...")
-    # Convertir enlaces a edge_index (formato [2, num_edges])
+    # 5. Convert to PyTorch Geometric format
+    print("Converting to PyTorch Geometric Data object...")
+    # Convert edges to edge_index (format [2, num_edges])
     edge_index = torch.tensor(enlaces.T, dtype=torch.long)
 
-    # Crear features de nodos
-    # Opción 1: Si cada nodo tiene una sola feature (valor de la serie)
+    # Create node features
+    # Option 1: If each node has a single feature (series value)
     node_features = torch.tensor(imf_valores, dtype=torch.float).unsqueeze(1)
     
-    # Opción 2: Si cada nodo tiene múltiples features (ej: embedding)
+    # Option 2: If each node has multiple features (e.g. embedding)
     # node_features = torch.tensor(embedding, dtype=torch.float)
 
-    # 6. Crear el objeto Data
+    # 6. Create the Data object
     data = Data(x=node_features, edge_index=edge_index)
 
-    # 7. (Opcional) Guardar metadatos en el objeto Data
-    # Si tu transformación tiene parámetros importantes, guárdalos como atributos
+    # 7. (Optional) Save metadata in the Data object
+    # If your transformation has important parameters, save them as attributes
     # data.parametro_importante = valor_parametro
 
-    # 8. Imprimir información del grafo creado
-    print(f"\nObjeto Data creado:")
-    print(f"  - Número de nodos: {data.num_nodes}")
-    print(f"  - Número de enlaces: {data.num_edges}")
+    # 8. Print information about the created graph
+    print(f"\nData object created:")
+    print(f"  - Number of nodes: {data.num_nodes}")
+    print(f"  - Number of edges: {data.num_edges}")
     if data.x is not None:
-        print(f"  - Features de nodos shape: {data.x.shape}")
+        print(f"  - Node features shape: {data.x.shape}")
     if data.edge_index is not None:
         print(f"  - Edge index shape: {data.edge_index.shape}")
 
     return data
 ```
 
-#### Puntos Importantes
+#### Important Points
 
-1. **Formato de edge_index**: Debe ser un tensor de forma `[2, num_edges]` donde la primera fila son los nodos fuente y la segunda los nodos destino.
+1. **edge_index format**: Must be a tensor of shape `[2, num_edges]` where the first row contains source nodes and the second row contains target nodes.
 
-2. **Features de nodos**: Debe ser un tensor de forma `[num_nodes, num_features]`. Si cada nodo tiene una sola feature, usa `.unsqueeze(1)` para añadir la dimensión.
+2. **Node features**: Must be a tensor of shape `[num_nodes, num_features]`. If each node has a single feature, use `.unsqueeze(1)` to add the dimension.
 
-3. **Metadatos opcionales**: Si tu transformación tiene parámetros importantes (como `tau` y `dim_embedding` en el grafo de recurrencia), guárdalos como atributos del objeto `Data` para que se incluyan en los metadatos al guardar.
+3. **Optional metadata**: If your transformation has important parameters (such as `tau` and `dim_embedding` in the recurrence graph), save them as attributes of the `Data` object so they are included in metadata when saving.
 
-4. **Manejo de errores**: Incluye validaciones apropiadas y mensajes de error claros.
+4. **Error handling**: Include appropriate validations and clear error messages.
 
-5. **Logging**: Usa `print()` para proporcionar información sobre el progreso (el proyecto no usa el sistema de logging estándar en estas funciones).
+5. **Logging**: Use `print()` to provide progress information (the project does not use the standard logging system in these functions).
 
-### Paso 2: Integrar en `obtener_grafos_all_imf()`
+### Step 2: Integrate into `build_all_imf_graphs()`
 
-Modifica la función `obtener_grafos_all_imf()` en el mismo archivo para incluir tu nueva transformación.
+Modify the `build_all_imf_graphs()` function in the same file to include your new transformation.
 
-#### Ubicación en el Código
+#### Location in the Code
 
-Busca la sección donde se procesan los diferentes tipos de grafos (alrededor de la línea 776) y añade un nuevo bloque:
+Find the section where the different graph types are processed (around line 776) and add a new block:
 
 ```python
-# 4. Grafo [NOMBRE_DEL_TIPO]
+# 4. [GRAPH_TYPE_NAME] graph
 try:
-    print(f"\n--- Generando grafo [NOMBRE_DEL_TIPO] para {id_imf} ---")
+    print(f"\n--- Generating [GRAPH_TYPE_NAME] graph for {id_imf} ---")
     carpeta_nuevo_tipo = carpeta_salida_base / "[nombre_tipo]" / id_imf.lower()
     carpeta_nuevo_tipo.mkdir(parents=True, exist_ok=True)
     archivo_salida_nuevo_tipo = str(
         carpeta_nuevo_tipo / f"grafo_[nombre_tipo]_{id_imf.lower()}"
     )
 
-    grafo_nuevo_tipo = obtener_grafo_nuevo_tipo_imf(
+    grafo_nuevo_tipo = build_new_type_imf_graph(
         archivo_imfs=archivo_imfs,
         id_imf=id_imf,
-        # Pasa aquí los parámetros específicos de tu transformación
+        # Pass transformation-specific parameters here
     )
-    guardar_grafo_data(
+    save_graph_data(
         data=grafo_nuevo_tipo,
         archivo_salida=archivo_salida_nuevo_tipo,
         id_imf=id_imf,
@@ -159,61 +159,61 @@ try:
         "archivo": archivo_salida_nuevo_tipo,
         "num_nodes": grafo_nuevo_tipo.num_nodes,
         "num_edges": grafo_nuevo_tipo.num_edges,
-        # Añade aquí metadatos específicos si los guardaste en el objeto Data
+        # Add specific metadata here if you saved it in the Data object
         "exito": True,
     }
-    print(f"✓ Grafo [NOMBRE_DEL_TIPO] generado exitosamente para {id_imf}")
+    print(f"✓ [GRAPH_TYPE_NAME] graph generated successfully for {id_imf}")
 
 except Exception as e:
-    print(f"✗ Error al generar grafo [NOMBRE_DEL_TIPO] para {id_imf}: {e}")
+    print(f"✗ Error generating [GRAPH_TYPE_NAME] graph for {id_imf}: {e}")
     resultados_imf["[nombre_tipo]"] = {"exito": False, "error": str(e)}
 ```
 
-#### Parámetros de `obtener_grafos_all_imf()`
+#### Parameters of `build_all_imf_graphs()`
 
-Si tu transformación requiere parámetros adicionales, añádelos a la firma de `obtener_grafos_all_imf()` y pásalos a tu función de transformación.
+If your transformation requires additional parameters, add them to the signature of `build_all_imf_graphs()` and pass them to your transformation function.
 
-### Paso 3: Actualizar la Documentación del Módulo
+### Step 3: Update the Module Documentation
 
-Actualiza el docstring del módulo al inicio de `graph_imf_transform_utils.py` para incluir tu nueva transformación:
+Update the module docstring at the top of `graph_imf_transform_utils.py` to include your new transformation:
 
 ```python
 """
-Utilidades para transformar IMFs a grafos como objetos Data de PyTorch Geometric.
+Utilities for transforming IMFs into graphs as PyTorch Geometric Data objects.
 
-Este módulo contiene funciones para transformar Intrinsic Mode Functions (IMFs) a diferentes
-tipos de grafos: Horizontal Visibility Graph (HVG), Natural Visibility Graph (NVG),
-grafo de recurrencia y [NOMBRE_DEL_TIPO].
+This module contains functions for transforming Intrinsic Mode Functions (IMFs) into different
+types of graphs: Horizontal Visibility Graph (HVG), Natural Visibility Graph (NVG),
+recurrence graph, and [GRAPH_TYPE_NAME].
 """
 ```
 
-### Paso 4: Crear un Script de Prueba (Opcional pero Recomendado)
+### Step 4: Create a Test Script (Optional but Recommended)
 
-Crea un script de prueba en `scripts/` para probar tu nueva transformación de forma independiente. Puedes usar como referencia los scripts existentes:
+Create a test script in `scripts/` to test your new transformation independently. You can use the existing scripts as reference:
 
-- `scripts/16nov25/obtener_grafo_hvg_imf.py`
-- `scripts/16nov25/obtener_grafo_nvg_imf.py`
-- `scripts/16nov25/obtener_grafo_recurrencia_imf.py`
+- `scripts/16nov25/build_hvg_imf_graph.py`
+- `scripts/16nov25/build_nvg_imf_graph.py`
+- `scripts/16nov25/build_recurrence_imf_graph.py`
 
-#### Ejemplo de Script de Prueba
+#### Example Test Script
 
 ```python
 """
-Script para transformar una IMF a grafo [NOMBRE_DEL_TIPO] como objeto Data de PyTorch Geometric.
+Script to transform an IMF into a [GRAPH_TYPE_NAME] graph as a PyTorch Geometric Data object.
 
-Este script carga una IMF desde un archivo parquet y la transforma a grafo [NOMBRE_DEL_TIPO]
-como un objeto Data de PyTorch Geometric.
+This script loads an IMF from a parquet file and transforms it into a [GRAPH_TYPE_NAME] graph
+as a PyTorch Geometric Data object.
 """
 
 from pathlib import Path
 
-from GraphEMD.data.graph_imf_transform_utils import obtener_grafo_nuevo_tipo_imf
-from GraphEMD.data.python_utils import guardar_grafo_data
+from GraphEMD.data.graph_imf_transform_utils import build_new_type_imf_graph
+from GraphEMD.data.python_utils import save_graph_data
 
 
 if __name__ == "__main__":
     
-    # Variables de configuración para probar el método
+    # Configuration variables to test the method
     proyecto_root = Path(__file__).parent.parent.parent
 
     archivo_imfs = str(proyecto_root / "data" / "16dic25" / "msci_world_imfs.parquet")
@@ -223,61 +223,61 @@ if __name__ == "__main__":
     carpeta_salida.mkdir(parents=True, exist_ok=True)
     archivo_salida = str(carpeta_salida / f"grafo_[nombre_tipo]_{id_imf.lower()}")
 
-    # Verificar que el archivo existe
+    # Verify that the file exists
     if not Path(archivo_imfs).exists():
         raise FileNotFoundError(
-            f"El archivo {archivo_imfs} no existe. "
-            "Asegúrate de que el archivo esté en la ubicación correcta."
+            f"File {archivo_imfs} does not exist. "
+            "Make sure the file is in the correct location."
         )
 
-    # Probar el método
+    # Test the method
     print("=" * 60)
-    print("TRANSFORMACIÓN DE IMF A GRAFO [NOMBRE_DEL_TIPO]")
+    print("IMF TO [GRAPH_TYPE_NAME] GRAPH TRANSFORMATION")
     print("=" * 60)
 
-    # Construir el grafo
-    grafo = obtener_grafo_nuevo_tipo_imf(
+    # Build the graph
+    grafo = build_new_type_imf_graph(
         archivo_imfs=archivo_imfs,
         id_imf=id_imf,
-        # Pasa aquí los parámetros específicos
+        # Pass transformation-specific parameters here
     )
 
-    # Guardar el grafo
-    guardar_grafo_data(
+    # Save the graph
+    save_graph_data(
         data=grafo,
         archivo_salida=archivo_salida,
         id_imf=id_imf,
     )
 
     print("\n" + "=" * 60)
-    print("RESUMEN")
+    print("SUMMARY")
     print("=" * 60)
-    print(f"Grafo [NOMBRE_DEL_TIPO] creado exitosamente para {id_imf}")
-    print(f"  - Nodos: {grafo.num_nodes}")
-    print(f"  - Enlaces: {grafo.num_edges}")
+    print(f"[GRAPH_TYPE_NAME] graph created successfully for {id_imf}")
+    print(f"  - Nodes: {grafo.num_nodes}")
+    print(f"  - Edges: {grafo.num_edges}")
     if grafo.x is not None:
-        print(f"  - Features de nodos: {grafo.x.shape}")
+        print(f"  - Node features: {grafo.x.shape}")
 ```
 
-### Paso 5: Verificar el Formato de Salida
+### Step 5: Verify the Output Format
 
-Asegúrate de que tu función retorna un objeto `Data` de PyTorch Geometric con:
-- `x`: Tensor de features de nodos de forma `[num_nodes, num_features]`
-- `edge_index`: Tensor de enlaces de forma `[2, num_edges]`
+Make sure your function returns a PyTorch Geometric `Data` object with:
+- `x`: Node features tensor of shape `[num_nodes, num_features]`
+- `edge_index`: Edge tensor of shape `[2, num_edges]`
 
-Opcionalmente, puedes añadir atributos personalizados al objeto `Data` para guardar metadatos.
+Optionally, you can add custom attributes to the `Data` object to store metadata.
 
-### Paso 6: Probar la Integración
+### Step 6: Test the Integration
 
-Ejecuta `obtener_grafos_all_imf()` con tu nueva transformación para verificar que:
-1. Se generan los grafos correctamente
-2. Se guardan en la estructura de carpetas esperada
-3. Los metadatos se guardan correctamente
-4. No hay errores en el procesamiento
+Run `build_all_imf_graphs()` with your new transformation to verify that:
+1. Graphs are generated correctly
+2. They are saved in the expected folder structure
+3. Metadata is saved correctly
+4. There are no errors during processing
 
-## Estructura de Carpetas de Salida
+## Output Folder Structure
 
-Los grafos se guardan en la siguiente estructura:
+Graphs are saved in the following structure:
 
 ```
 {carpeta_salida_base}/
@@ -295,64 +295,63 @@ Los grafos se guardan en la siguiente estructura:
         └── grafo_[nombre_tipo]_{id_imf}.*
 ```
 
-Cada grafo se guarda en múltiples formatos:
-- `*_features.parquet`: Features de nodos
-- `*_edges.parquet`: Lista de enlaces
-- `*_metadata.csv`: Metadatos del grafo
-- `*.pt`: Objeto Data completo serializado con torch
+Each graph is saved in multiple formats:
+- `*_features.parquet`: Node features
+- `*_edges.parquet`: Edge list
+- `*_metadata.csv`: Graph metadata
+- `*.pt`: Full serialized Data object with torch
 
-## Ejemplos de Referencia
+## Reference Examples
 
-### Ejemplo Simple: HVG y NVG
+### Simple Example: HVG and NVG
 
-Las funciones `obtener_grafo_hvg_imf()` y `obtener_grafo_nvg_imf()` son ejemplos simples que:
-- Usan la librería `ts2vg` para construir el grafo
-- Cada nodo tiene una sola feature (el valor de la serie temporal)
-- No requieren parámetros adicionales complejos
+The `build_hvg_imf_graph()` and `build_nvg_imf_graph()` functions are simple examples that:
+- Use the `ts2vg` library to build the graph
+- Each node has a single feature (the time series value)
+- Do not require complex additional parameters
 
-### Ejemplo Complejo: Grafo de Recurrencia
+### Complex Example: Recurrence Graph
 
-La función `obtener_grafo_recurrencia_imf()` es un ejemplo más complejo que:
-- Requiere múltiples pasos (selección de tau, selección de dim, construcción de embedding, cálculo de matriz de recurrencia)
-- Tiene múltiples parámetros configurables
-- Guarda metadatos adicionales en el objeto Data
-- Usa funciones auxiliares para cálculos intermedios
+The `build_recurrence_imf_graph()` function is a more complex example that:
+- Requires multiple steps (tau selection, dim selection, embedding construction, recurrence matrix computation)
+- Has multiple configurable parameters
+- Saves additional metadata in the Data object
+- Uses helper functions for intermediate calculations
 
-## Convenciones de Código
+## Code Conventions
 
-Sigue las convenciones establecidas en el proyecto:
+Follow the conventions established in the project:
 
-1. **Nombres de funciones**: Usa `snake_case` y el prefijo `obtener_grafo_` seguido del tipo de grafo y `_imf`
-2. **Docstrings**: Usa formato NumPy/SciPy en español
-3. **Type hints**: Incluye type hints en todas las funciones
-4. **Mensajes informativos**: Usa `print()` para proporcionar información sobre el progreso
-5. **Manejo de errores**: Incluye validaciones y mensajes de error claros
+1. **Function names**: Use `snake_case` and the prefix `build_` followed by the graph type and `_imf`
+2. **Docstrings**: Use NumPy/SciPy format in English
+3. **Type hints**: Include type hints in all functions
+4. **Informative messages**: Use `print()` to provide progress information
+5. **Error handling**: Include validations and clear error messages
 
-## Checklist Final
+## Final Checklist
 
-Antes de considerar tu contribución completa, verifica:
+Before considering your contribution complete, verify:
 
-- [ ] La función de transformación está implementada y documentada
-- [ ] La función retorna un objeto `Data` válido de PyTorch Geometric
-- [ ] La función está integrada en `obtener_grafos_all_imf()`
-- [ ] La documentación del módulo está actualizada
-- [ ] Se ha creado un script de prueba (opcional pero recomendado)
-- [ ] Se ha probado la transformación con datos reales
-- [ ] Los grafos se guardan correctamente en la estructura de carpetas esperada
-- [ ] Los metadatos se guardan correctamente (si aplica)
-- [ ] El código sigue las convenciones del proyecto
-- [ ] No hay errores de linting (verifica con black)
+- [ ] The transformation function is implemented and documented
+- [ ] The function returns a valid PyTorch Geometric `Data` object
+- [ ] The function is integrated into `build_all_imf_graphs()`
+- [ ] The module documentation is updated
+- [ ] A test script has been created (optional but recommended)
+- [ ] The transformation has been tested with real data
+- [ ] Graphs are saved correctly in the expected folder structure
+- [ ] Metadata is saved correctly (if applicable)
+- [ ] The code follows project conventions
+- [ ] There are no linting errors (verify with black)
 
-## Notas Adicionales
+## Additional Notes
 
-- Si tu transformación requiere nuevas dependencias, asegúrate de añadirlas a los archivos de configuración del proyecto (requirements.txt, setup.py, etc.)
-- Si tu transformación es computacionalmente intensiva, considera añadir opciones para paralelización o procesamiento por lotes
-- Si tu transformación tiene parámetros que afectan significativamente los resultados, documenta claramente sus efectos y valores recomendados
+- If your transformation requires new dependencies, make sure to add them to the project configuration files (requirements.txt, setup.py, etc.)
+- If your transformation is computationally intensive, consider adding options for parallelization or batch processing
+- If your transformation has parameters that significantly affect results, clearly document their effects and recommended values
 
-## Soporte
+## Support
 
-Si tienes dudas o problemas al implementar una nueva transformación, revisa:
-1. Las funciones existentes como referencia
-2. La documentación de PyTorch Geometric sobre objetos `Data`
-3. Los scripts de prueba existentes
-
+If you have questions or problems when implementing a new transformation, review:
+1. The existing functions as reference
+2. The PyTorch Geometric documentation on `Data` objects
+3. The existing test scripts

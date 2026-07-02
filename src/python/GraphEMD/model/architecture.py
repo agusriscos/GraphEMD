@@ -10,8 +10,8 @@ class PositionalEmbedding(torch.nn.Module):
     def __init__(self, mode: int):
         """
         Positional Embedding Module.
-        :param mode: Para mode == 1 la codificación solo usa la función seno para todas las posiciones. Para mode == 2
-        la codificación usa el seno para las posiciones impares y coseno para las pares
+        :param mode: For mode == 1, encoding uses only the sine function for all positions. For mode == 2,
+        encoding uses sine for odd positions and cosine for even positions.
         """
         super().__init__()
         self.div_term_const = 10000
@@ -37,7 +37,7 @@ class NodeEmbedding(torch.nn.Module):
         self.configuration = configuration
         conv_config = configuration["CONVOLUTION"]
 
-        # Bloque de propagación y agregación de mensaje (INPUT GRAPH EMBEDDINGS)
+        # Message propagation and aggregation block (INPUT GRAPH EMBEDDINGS)
         self.conv_layers = torch.nn.ModuleList(
             [HyperConvLayer(**conv_config) for _ in range(configuration["CONVOLUTION_NUM_LAYERS"])]
         )

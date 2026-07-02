@@ -1,9 +1,9 @@
 """
-Utilidades para transformar IMFs a grafos como objetos Data de PyTorch Geometric.
+Utilities for transforming IMFs into graphs as PyTorch Geometric Data objects.
 
-Este módulo contiene funciones para transformar Intrinsic Mode Functions (IMFs) a diferentes
-tipos de grafos: Horizontal Visibility Graph (HVG), Natural Visibility Graph (NVG) y
-grafo de recurrencia.
+This module contains functions to transform Intrinsic Mode Functions (IMFs) into different
+graph types: Horizontal Visibility Graph (HVG), Natural Visibility Graph (NVG), and
+recurrence graph.
 """
 
 from pathlib import Path
@@ -17,179 +17,179 @@ from sklearn.metrics import mutual_info_score
 from torch_geometric.data import Data
 from ts2vg import HorizontalVG, NaturalVG
 
-from GraphEMD.data.python_utils import guardar_grafo_data
+from GraphEMD.data.python_utils import save_graph_data
 
 
-def obtener_grafo_hvg_imf(
+def build_hvg_imf_graph(
     archivo_imfs: str,
     id_imf: str,
 ) -> Data:
     """
-    Transforma una IMF a grafo HVG y retorna un objeto Data de PyTorch Geometric.
+    Transform an IMF into an HVG graph and return a PyTorch Geometric Data object.
 
-    Carga una IMF específica desde un archivo parquet y construye el grafo Horizontal Visibility
-    Graph (HVG). El objeto Data contiene las features de nodos (valores de la IMF) y los enlaces
-    del grafo (edge_index).
+    Loads a specific IMF from a parquet file and builds the Horizontal Visibility
+    Graph (HVG). The Data object contains node features (IMF values) and graph
+    edges (edge_index).
 
     Parameters
     ----------
     archivo_imfs : str
-        Ruta al archivo parquet con las IMFs (debe contener columnas IMF_1, IMF_2, etc.).
+        Path to the parquet file with IMFs (must contain columns IMF_1, IMF_2, etc.).
     id_imf : str
-        Identificador de la IMF a transformar (ej: "IMF_1", "IMF_2", "Residuo").
+        Identifier of the IMF to transform (e.g. "IMF_1", "IMF_2", "Residuo").
 
     Returns
     -------
     Data
-        Objeto Data de PyTorch Geometric con el grafo HVG de la IMF.
+        PyTorch Geometric Data object with the IMF HVG graph.
 
     Examples
     --------
     >>> from pathlib import Path
     >>> proyecto_root = Path(__file__).parent.parent.parent.parent.parent
     >>> archivo_imfs = proyecto_root / "data" / "16dic25" / "msci_world_imfs.parquet"
-    >>> grafo = obtener_grafo_hvg_imf(str(archivo_imfs), "IMF_1")
-    >>> print(f"Nodos: {grafo.num_nodes}, Enlaces: {grafo.num_edges}")
+    >>> grafo = build_hvg_imf_graph(str(archivo_imfs), "IMF_1")
+    >>> print(f"Nodes: {grafo.num_nodes}, Edges: {grafo.num_edges}")
     """
-    # Cargar datos de IMFs
-    print(f"Cargando IMFs desde: {archivo_imfs}")
+    # Load IMF data
+    print(f"Loading IMFs from: {archivo_imfs}")
     df_imfs = pd.read_parquet(archivo_imfs, engine="pyarrow")
-    print(f"Shape del DataFrame: {df_imfs.shape}")
-    print(f"Columnas disponibles: {list(df_imfs.columns)}")
+    print(f"DataFrame shape: {df_imfs.shape}")
+    print(f"Available columns: {list(df_imfs.columns)}")
 
-    # Verificar que existe la IMF especificada
+    # Verify that the specified IMF exists
     if id_imf not in df_imfs.columns:
         raise ValueError(
-            f"La IMF '{id_imf}' no existe en el DataFrame. "
-            f"Columnas disponibles: {list(df_imfs.columns)}"
+            f"IMF '{id_imf}' does not exist in the DataFrame. "
+            f"Available columns: {list(df_imfs.columns)}"
         )
 
-    # Extraer la IMF seleccionada
+    # Extract the selected IMF
     imf_valores = np.array(df_imfs[id_imf].values)
-    print(f"\nIMF seleccionada: {id_imf}")
-    print(f"Shape de {id_imf}: {imf_valores.shape}")
+    print(f"\nSelected IMF: {id_imf}")
+    print(f"Shape of {id_imf}: {imf_valores.shape}")
     print(
         f"Valores - Min: {np.min(imf_valores):.4f}, Max: {np.max(imf_valores):.4f}, "
         f"Mean: {np.mean(imf_valores):.4f}"
     )
 
-    # Construir el grafo HVG (Horizontal Visibility Graph)
-    print("\nConstruyendo grafo HVG...")
+    # Build the HVG (Horizontal Visibility Graph)
+    print("\nBuilding HVG graph...")
     hvg = HorizontalVG(directed="left_to_right")
     grafo_hvg = hvg.build(imf_valores)
 
-    # Obtener nodos y enlaces
-    nodos = np.arange(len(imf_valores))  # Los nodos son los índices temporales
-    enlaces = np.array(grafo_hvg.edges)  # Los enlaces son las conexiones de visibilidad
+    # Get nodes and edges
+    nodos = np.arange(len(imf_valores))  # Nodes are temporal indices
+    edges = np.array(grafo_hvg.edges)  # Edges are visibility connections
 
-    print(f"Número de nodos: {len(nodos)}")
-    print(f"Número de enlaces: {len(enlaces)}")
+    print(f"Number of nodes: {len(nodos)}")
+    print(f"Number of edges: {len(enlaces)}")
 
-    # Convertir el grafo HVG a un objeto Data de PyTorch Geometric
-    print("Convirtiendo a objeto Data de PyTorch Geometric...")
-    # Convertir enlaces a edge_index (formato [2, num_edges])
+    # Convert the HVG graph to a PyTorch Geometric Data object
+    print("Converting to PyTorch Geometric Data object...")
+    # Convert edges to edge_index (format [2, num_edges])
     edge_index = torch.tensor(enlaces.T, dtype=torch.long)
 
-    # Crear features de nodos usando los valores de la serie temporal
-    # Cada nodo tiene como feature su valor en la serie temporal
+    # Create node features from time series values
+    # Each node has its time series value as its feature
     node_features = torch.tensor(imf_valores, dtype=torch.float).unsqueeze(1)
 
-    # Crear el objeto Data
+    # Create the Data object
     data = Data(x=node_features, edge_index=edge_index)
 
-    print(f"Objeto Data creado:")
-    print(f"  - Número de nodos: {data.num_nodes}")
-    print(f"  - Número de enlaces: {data.num_edges}")
+    print(f"Data object created:")
+    print(f"  - Number of nodes: {data.num_nodes}")
+    print(f"  - Number of edges: {data.num_edges}")
     if data.x is not None:
-        print(f"  - Features de nodos shape: {data.x.shape}")
+        print(f"  - Node features shape: {data.x.shape}")
     if data.edge_index is not None:
         print(f"  - Edge index shape: {data.edge_index.shape}")
 
     return data
 
 
-def obtener_grafo_nvg_imf(
+def build_nvg_imf_graph(
     archivo_imfs: str,
     id_imf: str,
 ) -> Data:
     """
-    Transforma una IMF a grafo NVG y retorna un objeto Data de PyTorch Geometric.
+    Transform an IMF into an NVG graph and return a PyTorch Geometric Data object.
 
-    Carga una IMF específica desde un archivo parquet y construye el grafo Natural Visibility
-    Graph (NVG). El objeto Data contiene las features de nodos (valores de la IMF) y los enlaces
-    del grafo (edge_index).
+    Loads a specific IMF from a parquet file and builds the Natural Visibility
+    Graph (NVG). The Data object contains node features (IMF values) and graph
+    edges (edge_index).
 
     Parameters
     ----------
     archivo_imfs : str
-        Ruta al archivo parquet con las IMFs (debe contener columnas IMF_1, IMF_2, etc.).
+        Path to the parquet file with IMFs (must contain columns IMF_1, IMF_2, etc.).
     id_imf : str
-        Identificador de la IMF a transformar (ej: "IMF_1", "IMF_2", "Residuo").
+        Identifier of the IMF to transform (e.g. "IMF_1", "IMF_2", "Residuo").
 
     Returns
     -------
     Data
-        Objeto Data de PyTorch Geometric con el grafo NVG de la IMF.
+        PyTorch Geometric Data object with the IMF NVG graph.
 
     Examples
     --------
     >>> from pathlib import Path
     >>> proyecto_root = Path(__file__).parent.parent.parent.parent.parent
     >>> archivo_imfs = proyecto_root / "data" / "16dic25" / "msci_world_imfs.parquet"
-    >>> grafo = obtener_grafo_nvg_imf(str(archivo_imfs), "IMF_1")
-    >>> print(f"Nodos: {grafo.num_nodes}, Enlaces: {grafo.num_edges}")
+    >>> grafo = build_nvg_imf_graph(str(archivo_imfs), "IMF_1")
+    >>> print(f"Nodes: {grafo.num_nodes}, Edges: {grafo.num_edges}")
     """
-    # Cargar datos de IMFs
-    print(f"Cargando IMFs desde: {archivo_imfs}")
+    # Load IMF data
+    print(f"Loading IMFs from: {archivo_imfs}")
     df_imfs = pd.read_parquet(archivo_imfs, engine="pyarrow")
-    print(f"Shape del DataFrame: {df_imfs.shape}")
-    print(f"Columnas disponibles: {list(df_imfs.columns)}")
+    print(f"DataFrame shape: {df_imfs.shape}")
+    print(f"Available columns: {list(df_imfs.columns)}")
 
-    # Verificar que existe la IMF especificada
+    # Verify that the specified IMF exists
     if id_imf not in df_imfs.columns:
         raise ValueError(
-            f"La IMF '{id_imf}' no existe en el DataFrame. "
-            f"Columnas disponibles: {list(df_imfs.columns)}"
+            f"IMF '{id_imf}' does not exist in the DataFrame. "
+            f"Available columns: {list(df_imfs.columns)}"
         )
 
-    # Extraer la IMF seleccionada
+    # Extract the selected IMF
     imf_valores = np.array(df_imfs[id_imf].values)
-    print(f"\nIMF seleccionada: {id_imf}")
-    print(f"Shape de {id_imf}: {imf_valores.shape}")
+    print(f"\nSelected IMF: {id_imf}")
+    print(f"Shape of {id_imf}: {imf_valores.shape}")
     print(
         f"Valores - Min: {np.min(imf_valores):.4f}, Max: {np.max(imf_valores):.4f}, "
         f"Mean: {np.mean(imf_valores):.4f}"
     )
 
-    # Construir el grafo NVG (Natural Visibility Graph)
-    print("\nConstruyendo grafo NVG...")
+    # Build the NVG (Natural Visibility Graph)
+    print("\nBuilding NVG graph...")
     nvg = NaturalVG(directed="left_to_right")
     grafo_nvg = nvg.build(imf_valores)
 
-    # Obtener nodos y enlaces
-    nodos = np.arange(len(imf_valores))  # Los nodos son los índices temporales
-    enlaces = np.array(grafo_nvg.edges)  # Los enlaces son las conexiones de visibilidad
+    # Get nodes and edges
+    nodos = np.arange(len(imf_valores))  # Nodes are temporal indices
+    edges = np.array(grafo_nvg.edges)  # Edges are visibility connections
 
-    print(f"Número de nodos: {len(nodos)}")
-    print(f"Número de enlaces: {len(enlaces)}")
+    print(f"Number of nodes: {len(nodos)}")
+    print(f"Number of edges: {len(enlaces)}")
 
-    # Convertir el grafo NVG a un objeto Data de PyTorch Geometric
-    print("Convirtiendo a objeto Data de PyTorch Geometric...")
-    # Convertir enlaces a edge_index (formato [2, num_edges])
+    # Convert the NVG graph to a PyTorch Geometric Data object
+    print("Converting to PyTorch Geometric Data object...")
+    # Convert edges to edge_index (format [2, num_edges])
     edge_index = torch.tensor(enlaces.T, dtype=torch.long)
 
-    # Crear features de nodos usando los valores de la serie temporal
-    # Cada nodo tiene como feature su valor en la serie temporal
+    # Create node features from time series values
+    # Each node has its time series value as its feature
     node_features = torch.tensor(imf_valores, dtype=torch.float).unsqueeze(1)
 
-    # Crear el objeto Data
+    # Create the Data object
     data = Data(x=node_features, edge_index=edge_index)
 
-    print(f"Objeto Data creado:")
-    print(f"  - Número de nodos: {data.num_nodes}")
-    print(f"  - Número de enlaces: {data.num_edges}")
+    print(f"Data object created:")
+    print(f"  - Number of nodes: {data.num_nodes}")
+    print(f"  - Number of edges: {data.num_edges}")
     if data.x is not None:
-        print(f"  - Features de nodos shape: {data.x.shape}")
+        print(f"  - Node features shape: {data.x.shape}")
     if data.edge_index is not None:
         print(f"  - Edge index shape: {data.edge_index.shape}")
 
@@ -198,32 +198,32 @@ def obtener_grafo_nvg_imf(
 
 def calcular_informacion_mutual(serie: np.ndarray, tau_max: int = 50) -> tuple:
     """
-    Calcula la información mutua entre la serie y su versión desplazada.
+    Compute mutual information between the series and its time-shifted version.
 
     Parameters
     ----------
     serie : np.ndarray
-        Serie temporal unidimensional.
+        One-dimensional time series.
     tau_max : int, optional
-        Máximo valor de tau a evaluar. Por defecto es 50.
+        Maximum tau value to evaluate. Default is 50.
 
     Returns
     -------
     tuple
-        Tupla con (taus, valores_mi) donde taus son los valores de tau evaluados
-        y valores_mi son los valores de información mutua correspondientes.
+        Tuple (taus, valores_mi) where taus are the evaluated tau values
+        and valores_mi are the corresponding mutual information values.
     """
     taus = np.arange(1, min(tau_max + 1, len(serie) // 2))
     valores_mi = []
 
-    # Discretizar la serie para el cálculo de MI
-    # Usar histograma para discretizar
+    # Discretize the series for MI computation
+    # Use a histogram for discretization
     n_bins = int(np.sqrt(len(serie)))
     serie_discreta = np.digitize(serie, bins=np.linspace(serie.min(), serie.max(), n_bins))
 
     for tau in taus:
         serie_desplazada = np.roll(serie_discreta, -tau)
-        # Asegurar que ambas series tengan la misma longitud
+        # Ensure both series have the same length
         serie_original = serie_discreta[:-tau] if tau > 0 else serie_discreta
         serie_desplazada = serie_desplazada[:-tau] if tau > 0 else serie_desplazada
 
@@ -235,26 +235,26 @@ def calcular_informacion_mutual(serie: np.ndarray, tau_max: int = 50) -> tuple:
 
 def seleccionar_tau(serie: np.ndarray, tau_max: int = 50) -> int:
     """
-    Selecciona el valor óptimo de tau usando el primer mínimo de información mutua.
+    Select the optimal tau value using the first mutual information minimum.
 
     Parameters
     ----------
     serie : np.ndarray
-        Serie temporal unidimensional.
+        One-dimensional time series.
     tau_max : int, optional
-        Máximo valor de tau a evaluar. Por defecto es 50.
+        Maximum tau value to evaluate. Default is 50.
 
     Returns
     -------
     int
-        Valor óptimo de tau (delay).
+        Optimal tau value (delay).
     """
     taus, valores_mi = calcular_informacion_mutual(serie, tau_max)
 
-    # Buscar el primer mínimo local
-    # Si no hay mínimo claro, usar el primer valor donde la MI disminuye significativamente
+    # Find the first local minimum
+    # If no clear minimum exists, use the first value where MI decreases significantly
     if len(valores_mi) > 2:
-        # Buscar mínimos locales
+        # Find local minima
         minimos = []
         for i in range(1, len(valores_mi) - 1):
             if valores_mi[i] < valores_mi[i - 1] and valores_mi[i] < valores_mi[i + 1]:
@@ -263,13 +263,13 @@ def seleccionar_tau(serie: np.ndarray, tau_max: int = 50) -> int:
         if minimos:
             tau_optimo = taus[minimos[0]]
         else:
-            # Si no hay mínimo claro, usar el primer valor donde la derivada cambia de signo
+            # If no clear minimum exists, use the first value where the derivative changes sign
             derivada = np.diff(valores_mi)
             cambios = np.where(derivada > 0)[0]
             if len(cambios) > 0:
                 tau_optimo = taus[cambios[0] + 1] if cambios[0] + 1 < len(taus) else taus[1]
             else:
-                tau_optimo = taus[1]  # Valor por defecto
+                tau_optimo = taus[1]  # Default value
     else:
         tau_optimo = taus[0] if len(taus) > 0 else 1
 
@@ -278,28 +278,28 @@ def seleccionar_tau(serie: np.ndarray, tau_max: int = 50) -> int:
 
 def construir_espacio_embedding(serie: np.ndarray, dim: int, tau: int) -> np.ndarray:
     """
-    Construye el espacio de embedding usando el método de delay embedding.
+    Build the embedding space using delay embedding.
 
     Parameters
     ----------
     serie : np.ndarray
-        Serie temporal unidimensional.
+        One-dimensional time series.
     dim : int
-        Dimensión del embedding.
+        Embedding dimension.
     tau : int
-        Delay (retraso) para el embedding.
+        Delay for the embedding.
 
     Returns
     -------
     np.ndarray
-        Matriz de embedding de forma (N - (dim-1)*tau, dim) donde N es la longitud
-        de la serie original.
+        Embedding matrix of shape (N - (dim-1)*tau, dim) where N is the length
+        of the original series.
     """
     n = len(serie)
     m = n - (dim - 1) * tau
 
     if m <= 0:
-        raise ValueError(f"La combinación de dim={dim} y tau={tau} resulta en m={m} <= 0")
+        raise ValueError(f"The combination of dim={dim} y tau={tau} yields m={m} <= 0")
 
     embedding = np.zeros((m, dim))
     for i in range(dim):
@@ -316,60 +316,60 @@ def calcular_false_nearest_neighbors(
     ratio_min: float = 0.1,
 ) -> int:
     """
-    Calcula la dimensión óptima usando el método de False Nearest Neighbors (FNN).
+    Compute the optimal dimension using the False Nearest Neighbors (FNN) method.
 
     Parameters
     ----------
     serie : np.ndarray
-        Serie temporal unidimensional.
+        One-dimensional time series.
     tau : int
-        Delay (retraso) ya seleccionado.
+        Pre-selected delay.
     dim_max : int, optional
-        Dimensión máxima a evaluar. Por defecto es 10.
+        Maximum dimension to evaluate. Default is 10.
     umbral : float, optional
-        Umbral para considerar un vecino como "false". Por defecto es 10.0.
+        Threshold for considering a neighbor as "false". Default is 10.0.
     ratio_min : float, optional
-        Ratio mínimo de FNN para considerar que se ha alcanzado la dimensión óptima.
-        Por defecto es 0.1 (10%).
+        Minimum FNN ratio to consider that the optimal dimension has been reached.
+        Default is 0.1 (10%).
 
     Returns
     -------
     int
-        Dimensión óptima del embedding.
+        Optimal embedding dimension.
     """
     ratios_fnn = []
 
     for dim in range(1, dim_max + 1):
         try:
-            # Construir embedding en dimensión dim
+            # Build embedding in dimension dim
             embedding_dim = construir_espacio_embedding(serie, dim, tau)
 
             if dim == 1:
-                ratios_fnn.append(1.0)  # En dim=1, todos son "false" por definición
+                ratios_fnn.append(1.0)  # At dim=1, all are "false" by definition
                 continue
 
-            # Construir embedding en dimensión dim+1
+            # Build embedding in dimension dim+1
             embedding_dim_plus = construir_espacio_embedding(serie, dim + 1, tau)
 
-            # Construir KDTree para búsqueda de vecinos
+            # Build KDTree for neighbor search
             tree = KDTree(embedding_dim)
 
-            # Para cada punto, encontrar el vecino más cercano
+            # For each point, find the nearest neighbor
             n_puntos = len(embedding_dim)
             falsos_vecinos = 0
 
             for i in range(n_puntos):
-                # Encontrar el vecino más cercano en dimensión dim
-                # k=2 para obtener el punto mismo y su vecino más cercano
+                # Find the nearest neighbor in dimension dim
+                # k=2 to get the point itself and its nearest neighbor
                 distancias, indices = tree.query(embedding_dim[i], k=2)
 
-                # Asegurar que sean arrays
+                # Ensure they are arrays
                 if not isinstance(distancias, np.ndarray):
                     distancias = np.array([distancias])
                 if not isinstance(indices, np.ndarray):
                     indices = np.array([indices])
 
-                # Encontrar el vecino más cercano (excluyendo el punto mismo)
+                # Find the nearest neighbor (excluding the point itself)
                 if len(distancias) > 1:
                     if indices[0] == i:
                         vecino_idx = int(indices[1])
@@ -380,14 +380,14 @@ def calcular_false_nearest_neighbors(
                 else:
                     continue
 
-                # Calcular distancia en dimensión dim+1
+                # Compute distance in dimension dim+1
                 if vecino_idx < len(embedding_dim_plus) and i < len(embedding_dim_plus):
                     dist_dim_plus = np.linalg.norm(
                         embedding_dim_plus[i] - embedding_dim_plus[vecino_idx]
                     )
 
-                    # Verificar si es un false neighbor
-                    if dist_dim > 1e-10:  # Evitar división por cero
+                    # Check whether it is a false neighbor
+                    if dist_dim > 1e-10:  # Avoid division by zero
                         ratio = (
                             abs(embedding_dim_plus[i, -1] - embedding_dim_plus[vecino_idx, -1])
                             / dist_dim
@@ -398,20 +398,20 @@ def calcular_false_nearest_neighbors(
             ratio_fnn = falsos_vecinos / n_puntos if n_puntos > 0 else 1.0
             ratios_fnn.append(ratio_fnn)
 
-            # Si el ratio es muy bajo, probablemente hemos encontrado la dimensión óptima
+            # If the ratio is very low, the optimal dimension has likely been found
             if ratio_fnn < ratio_min:
                 return dim
 
         except Exception as e:
-            print(f"Error al calcular FNN para dim={dim}: {e}")
+            print(f"Error computing FNN for dim={dim}: {e}")
             ratios_fnn.append(1.0)
 
-    # Si no se encontró un mínimo claro, usar la dimensión con menor ratio
+    # If no clear minimum was found, use the dimension with the lowest ratio
     if ratios_fnn:
         dim_optima = int(np.argmin(ratios_fnn)) + 1
         return dim_optima
 
-    return 2  # Valor por defecto
+    return 2  # Default value
 
 
 def calcular_matriz_recurrencia(
@@ -421,80 +421,80 @@ def calcular_matriz_recurrencia(
     random_state: Optional[int] = None,
 ) -> tuple:
     """
-    Calcula la matriz de recurrencia a partir del espacio de embedding.
+    Compute the recurrence matrix from the embedding space.
 
     Parameters
     ----------
     embedding : np.ndarray
-        Matriz de embedding de forma (N, dim).
+        Embedding matrix of shape (N, dim).
     umbral : float, optional
-        Umbral absoluto para la distancia. Si es None, se usa umbral_percentil.
+        Absolute distance threshold. If None, umbral_percentil is used.
     umbral_percentil : float, optional
-        Percentil para determinar el umbral de distancia. Por defecto es 10.0.
+        Percentile used to determine the distance threshold. Default is 10.0.
     random_state : int, optional
-        Semilla para la generación de números aleatorios. Por defecto es None.
+        Seed for random number generation. Default is None.
 
     Returns
     -------
     tuple
-        Tupla con (matriz_recurrencia, umbral_utilizado) donde matriz_recurrencia es
-        una matriz binaria de forma (N, N) y umbral_utilizado es el umbral de distancia
-        utilizado (float).
+        Tuple (matriz_recurrencia, umbral_utilizado) where matriz_recurrencia is
+        a binary matrix of shape (N, N) and umbral_utilizado is the distance
+        threshold used (float).
     """
-    # Configurar random state para reproducibilidad
+    # Set random state for reproducibility
     if random_state is not None:
         np.random.seed(random_state)
 
     n = len(embedding)
 
-    # Advertencia para matrices muy grandes
+    # Warning for very large matrices
     if n > 5000:
         print(
-            f"Advertencia: La matriz de recurrencia será muy grande ({n}x{n}). "
-            f"Esto puede tardar varios minutos."
+            f"Warning: The recurrence matrix will be very large ({n}x{n}). "
+            f"This may take several minutes."
         )
 
-    # Construir KDTree
+    # Build KDTree
     tree = KDTree(embedding)
 
-    # Determinar umbral si no se proporciona
+    # Determine threshold if not provided
     if umbral is None:
-        # Calcular umbral usando una muestra de distancias
-        # Tomar una muestra aleatoria de puntos para estimar el percentil
+        # Compute threshold using a sample of distances
+        # Take a random sample of points to estimate the percentile
         n_muestra = min(1000, n)
         indices_muestra = np.random.choice(n, size=n_muestra, replace=False)
         distancias_muestra = []
 
         for idx in indices_muestra:
-            # Obtener distancias a los k vecinos más cercanos
+            # Get distances to the k nearest neighbors
             distancias, _ = tree.query(embedding[idx], k=min(100, n))
-            distancias_muestra.extend(distancias[1:])  # Excluir distancia a sí mismo
+            distancias_muestra.extend(distancias[1:])  # Exclude self-distance
 
         umbral = float(np.percentile(distancias_muestra, umbral_percentil))
-        print(f"Umbral calculado (percentil {umbral_percentil}): {umbral:.4f}")
+        print(f"Computed threshold (percentile {umbral_percentil}): {umbral:.4f}")
     else:
-        # Asegurar que el umbral proporcionado sea float
+        # Ensure the provided threshold is a float
         umbral = float(umbral)
 
-    # Construir matriz de recurrencia de manera eficiente
-    # Inicializar matriz de ceros
+    # Build recurrence matrix efficiently
+    # Initialize zero matrix
     matriz_recurrencia = np.zeros((n, n), dtype=int)
 
-    # Para cada punto, encontrar todos los puntos dentro del umbral
+    # For each point, find all points within the threshold
     for i in range(n):
-        # Usar query_ball_point para encontrar todos los puntos dentro del radio
+        # Use query_ball_point to find all points within the radius
         indices_vecinos = tree.query_ball_point(embedding[i], r=umbral, p=2)
-        # Convertir a array y eliminar el punto mismo
+        # Convert to array and remove the point itself
         indices_vecinos = np.array([idx for idx in indices_vecinos if idx != i])
         if len(indices_vecinos) > 0:
             matriz_recurrencia[i, indices_vecinos] = 1
 
-    print(f"Número de recurrencias encontradas: {np.sum(matriz_recurrencia)}")
+    print(f"Number of recurrences found: {np.sum(matriz_recurrencia)}")
 
     return matriz_recurrencia, umbral
 
 
-def obtener_grafo_recurrencia_imf(
+def build_recurrence_imf_graph(
     archivo_imfs: str,
     id_imf: str,
     tau_max: int = 50,
@@ -504,150 +504,149 @@ def obtener_grafo_recurrencia_imf(
     random_state: Optional[int] = None,
 ) -> Data:
     """
-    Transforma una IMF a grafo de recurrencia y retorna un objeto Data de PyTorch Geometric.
+    Transform an IMF into a recurrence graph and return a PyTorch Geometric Data object.
 
-    Carga una IMF específica desde un archivo parquet y construye el grafo de recurrencia
-    usando el método de delay embedding. El objeto Data contiene las features de nodos
-    (valores del embedding) y los enlaces del grafo (edge_index) basados en la matriz
-    de recurrencia.
+    Loads a specific IMF from a parquet file and builds the recurrence graph
+    using delay embedding. The Data object contains node features (embedding values)
+    and graph edges (edge_index) based on the recurrence matrix.
 
-    Los metadatos del proceso (tau, dimensión de embedding, algoritmo de distancia y
-    umbral de recurrencia) se guardan como atributos del objeto Data.
+    Process metadata (tau, embedding dimension, distance algorithm, and recurrence
+    threshold) is stored as attributes of the Data object.
 
     Parameters
     ----------
     archivo_imfs : str
-        Ruta al archivo parquet con las IMFs (debe contener columnas IMF_1, IMF_2, etc.).
+        Path to the parquet file with IMFs (must contain columns IMF_1, IMF_2, etc.).
     id_imf : str
-        Identificador de la IMF a transformar (ej: "IMF_1", "IMF_2", "Residuo").
+        Identifier of the IMF to transform (e.g. "IMF_1", "IMF_2", "Residuo").
     tau_max : int, optional
-        Máximo valor de tau a evaluar para la selección del delay. Por defecto es 50.
+        Maximum tau value to evaluate for delay selection. Default is 50.
     dim_max : int, optional
-        Dimensión máxima a evaluar para el embedding. Por defecto es 10.
+        Maximum dimension to evaluate for the embedding. Default is 10.
     umbral_percentil : float, optional
-        Percentil para determinar el umbral de distancia en la matriz de recurrencia.
-        Por defecto es 10.0.
+        Percentile used to determine the distance threshold in the recurrence matrix.
+        Default is 10.0.
     umbral : float, optional
-        Umbral absoluto para la distancia. Si se proporciona, se usa este valor en lugar
-        de calcularlo usando umbral_percentil. Por defecto es None.
+        Absolute distance threshold. If provided, this value is used instead of
+        computing it with umbral_percentil. Default is None.
     random_state : int, optional
-        Semilla para la generación de números aleatorios. Se usa para garantizar
-        reproducibilidad en todos los cálculos que involucran aleatoriedad. Por defecto es None.
+        Seed for random number generation. Used to ensure reproducibility in all
+        calculations involving randomness. Default is None.
 
     Returns
     -------
     Data
-        Objeto Data de PyTorch Geometric con el grafo de recurrencia de la IMF.
-        Los metadatos se guardan en los atributos:
-        - tau: valor de delay (retraso) utilizado
-        - dim_embedding: dimensión del embedding utilizado
-        - algoritmo_distancia: algoritmo de distancia utilizado ("euclidean" con KDTree)
-        - umbral_recurrencia: umbral de distancia utilizado para la matriz de recurrencia
+        PyTorch Geometric Data object with the IMF recurrence graph.
+        Metadata is stored in the attributes:
+        - tau: delay value used
+        - dim_embedding: embedding dimension used
+        - algoritmo_distancia: distance algorithm used ("euclidean" with KDTree)
+        - umbral_recurrencia: distance threshold used for the recurrence matrix
 
     Examples
     --------
     >>> from pathlib import Path
     >>> proyecto_root = Path(__file__).parent.parent.parent.parent.parent
     >>> archivo_imfs = proyecto_root / "data" / "16dic25" / "msci_world_imfs.parquet"
-    >>> grafo = obtener_grafo_recurrencia_imf(str(archivo_imfs), "IMF_1", random_state=42)
-    >>> print(f"Nodos: {grafo.num_nodes}, Enlaces: {grafo.num_edges}")
+    >>> grafo = build_recurrence_imf_graph(str(archivo_imfs), "IMF_1", random_state=42)
+    >>> print(f"Nodes: {grafo.num_nodes}, Edges: {grafo.num_edges}")
     >>> print(f"Tau: {grafo.tau}, Dim: {grafo.dim_embedding}")
     """
-    # Configurar random state al inicio para garantizar reproducibilidad
+    # Set random state at the start to ensure reproducibility
     if random_state is not None:
         np.random.seed(random_state)
 
-    # Cargar datos de IMFs
-    print(f"Cargando IMFs desde: {archivo_imfs}")
+    # Load IMF data
+    print(f"Loading IMFs from: {archivo_imfs}")
     df_imfs = pd.read_parquet(archivo_imfs, engine="pyarrow")
-    print(f"Shape del DataFrame: {df_imfs.shape}")
-    print(f"Columnas disponibles: {list(df_imfs.columns)}")
+    print(f"DataFrame shape: {df_imfs.shape}")
+    print(f"Available columns: {list(df_imfs.columns)}")
 
-    # Verificar que existe la IMF especificada
+    # Verify that the specified IMF exists
     if id_imf not in df_imfs.columns:
         raise ValueError(
-            f"La IMF '{id_imf}' no existe en el DataFrame. "
-            f"Columnas disponibles: {list(df_imfs.columns)}"
+            f"IMF '{id_imf}' does not exist in the DataFrame. "
+            f"Available columns: {list(df_imfs.columns)}"
         )
 
-    # Extraer la IMF seleccionada
+    # Extract the selected IMF
     imf_valores = np.array(df_imfs[id_imf].values)
-    print(f"\nIMF seleccionada: {id_imf}")
-    print(f"Shape de {id_imf}: {imf_valores.shape}")
+    print(f"\nSelected IMF: {id_imf}")
+    print(f"Shape of {id_imf}: {imf_valores.shape}")
     print(
         f"Valores - Min: {np.min(imf_valores):.4f}, Max: {np.max(imf_valores):.4f}, "
         f"Mean: {np.mean(imf_valores):.4f}"
     )
 
-    # Paso 1: Seleccionar tau (delay) usando información mutua
-    print("\nSeleccionando tau (delay) usando información mutua...")
+    # Step 1: Select tau (delay) using mutual information
+    print("\nSelecting tau (delay) using mutual information...")
     tau_optimo = seleccionar_tau(imf_valores, tau_max=tau_max)
-    print(f"Tau óptimo seleccionado: {tau_optimo}")
+    print(f"Optimal tau selected: {tau_optimo}")
 
-    # Paso 2: Seleccionar dim usando False Nearest Neighbors
-    print("Seleccionando dim (dimensión de embedding) usando False Nearest Neighbors...")
+    # Step 2: Select dim using False Nearest Neighbors
+    print("Selecting dim (embedding dimension) using False Nearest Neighbors...")
     dim_optima = calcular_false_nearest_neighbors(
         imf_valores, tau=tau_optimo, dim_max=dim_max
     )
-    print(f"Dimensión óptima seleccionada: {dim_optima}")
+    print(f"Optimal dimension selected: {dim_optima}")
 
-    # Paso 3: Construir espacio de embedding
+    # Step 3: Build embedding space
     print(
-        f"Construyendo espacio de embedding con dim={dim_optima} y tau={tau_optimo}..."
+        f"Building embedding space with dim={dim_optima} y tau={tau_optimo}..."
     )
     embedding = construir_espacio_embedding(imf_valores, dim=dim_optima, tau=tau_optimo)
-    print(f"Shape del embedding: {embedding.shape}")
+    print(f"Embedding shape: {embedding.shape}")
 
-    # Paso 4: Calcular matriz de recurrencia
-    print("Calculando matriz de recurrencia...")
+    # Step 4: Compute recurrence matrix
+    print("Computing recurrence matrix...")
     matriz_recurrencia, umbral_utilizado = calcular_matriz_recurrencia(
         embedding, umbral=umbral, umbral_percentil=umbral_percentil, random_state=random_state
     )
-    print(f"Shape de la matriz de recurrencia: {matriz_recurrencia.shape}")
-    print(f"Número de recurrencias (enlaces): {np.sum(matriz_recurrencia)}")
+    print(f"Recurrence matrix shape: {matriz_recurrencia.shape}")
+    print(f"Number of recurrences (edges): {np.sum(matriz_recurrencia)}")
 
-    # Paso 5: Convertir matriz de recurrencia a formato edge_index para PyTorch Geometric
-    print("Convirtiendo matriz de recurrencia a formato de grafo...")
+    # Step 5: Convert recurrence matrix to edge_index format for PyTorch Geometric
+    print("Converting recurrence matrix to graph format...")
 
-    # Obtener índices de las aristas (donde matriz_recurrencia == 1)
+    # Get edge indices (where matriz_recurrencia == 1)
     edge_indices = np.where(matriz_recurrencia == 1)
 
-    # Crear edge_index en formato [2, num_edges]
+    # Create edge_index in format [2, num_edges]
     edge_index = np.array([edge_indices[0], edge_indices[1]])
     edge_index_torch = torch.tensor(edge_index, dtype=torch.long)
 
-    print(f"Número de nodos: {len(embedding)}")
-    print(f"Número de enlaces: {edge_index_torch.shape[1]}")
+    print(f"Number of nodes: {len(embedding)}")
+    print(f"Number of edges: {edge_index_torch.shape[1]}")
 
-    # Crear features de nodos usando el embedding completo de cada nodo
+    # Create node features using the full embedding of each node
     node_features = torch.tensor(embedding, dtype=torch.float)
 
-    # Crear el objeto Data de PyTorch Geometric
+    # Create the PyTorch Geometric Data object
     data = Data(x=node_features, edge_index=edge_index_torch)
 
-    # Guardar metadatos en el objeto Data
+    # Store metadata in the Data object
     data.tau = int(tau_optimo)
     data.dim_embedding = int(dim_optima)
-    data.algoritmo_distancia = "euclidean"  # KDTree con p=2 usa distancia euclidiana
+    data.algoritmo_distancia = "euclidean"  # KDTree with p=2 uses Euclidean distance
     data.umbral_recurrencia = umbral_utilizado
 
-    print(f"\nObjeto Data creado:")
-    print(f"  - Número de nodos: {data.num_nodes}")
-    print(f"  - Número de enlaces: {data.num_edges}")
+    print(f"\nData object created:")
+    print(f"  - Number of nodes: {data.num_nodes}")
+    print(f"  - Number of edges: {data.num_edges}")
     if data.x is not None:
-        print(f"  - Features de nodos shape: {data.x.shape}")
+        print(f"  - Node features shape: {data.x.shape}")
     if data.edge_index is not None:
         print(f"  - Edge index shape: {data.edge_index.shape}")
-    print(f"\nMetadatos guardados:")
+    print(f"\nMetadata saved:")
     print(f"  - Tau (delay): {data.tau}")
-    print(f"  - Dimensión de embedding: {data.dim_embedding}")
-    print(f"  - Algoritmo de distancia: {data.algoritmo_distancia}")
-    print(f"  - Umbral de recurrencia: {data.umbral_recurrencia:.4f}")
+    print(f"  - Embedding dimension: {data.dim_embedding}")
+    print(f"  - Distance algorithm: {data.algoritmo_distancia}")
+    print(f"  - Recurrence threshold: {data.umbral_recurrencia:.4f}")
 
     return data
 
 
-def obtener_grafos_all_imf(
+def build_all_imf_graphs(
     df_imfs: Union[pd.DataFrame, str],
     carpeta_salida_base: Union[str, Path],
     tau_max: int = 50,
@@ -658,50 +657,50 @@ def obtener_grafos_all_imf(
     columnas_imf: Optional[list] = None,
 ) -> dict:
     """
-    Genera todos los tipos de grafos para todas las IMFs en el dataframe.
+    Generate all graph types for every IMF in the dataframe.
 
-    Para cada IMF en el dataframe, calcula y guarda los tres tipos de grafos implementados:
+    For each IMF in the dataframe, computes and saves the three implemented graph types:
     - Horizontal Visibility Graph (HVG)
     - Natural Visibility Graph (NVG)
-    - Grafo de recurrencia
+    - Recurrence graph
 
-    Los grafos se guardan en la estructura de carpetas:
+    Graphs are saved in the following folder structure:
     - {carpeta_salida_base}/hvg/{id_imf}/grafo_hvg_{id_imf}
     - {carpeta_salida_base}/nvg/{id_imf}/grafo_nvg_{id_imf}
     - {carpeta_salida_base}/recurrencia/{id_imf}/grafo_recurrencia_{id_imf}
 
     Parameters
     ----------
-    df_imfs : pd.DataFrame o str
-        DataFrame con las IMFs o ruta al archivo parquet que contiene las IMFs.
-        Debe contener columnas con nombres como "IMF_1", "IMF_2", etc.
-    carpeta_salida_base : str o Path
-        Ruta base donde se guardarán los grafos. Se crearán subcarpetas para cada
-        tipo de grafo y cada IMF.
+    df_imfs : pd.DataFrame or str
+        DataFrame with IMFs or path to the parquet file containing IMFs.
+        Must contain columns named like "IMF_1", "IMF_2", etc.
+    carpeta_salida_base : str or Path
+        Base path where graphs will be saved. Subfolders will be created for each
+        graph type and each IMF.
     tau_max : int, optional
-        Máximo valor de tau a evaluar para la selección del delay en grafos de recurrencia.
-        Por defecto es 50.
+        Maximum tau value to evaluate for delay selection in recurrence graphs.
+        Default is 50.
     dim_max : int, optional
-        Dimensión máxima a evaluar para el embedding en grafos de recurrencia.
-        Por defecto es 10.
+        Maximum dimension to evaluate for the embedding in recurrence graphs.
+        Default is 10.
     umbral_percentil : float, optional
-        Percentil para determinar el umbral de distancia en la matriz de recurrencia.
-        Por defecto es 10.0.
+        Percentile used to determine the distance threshold in the recurrence matrix.
+        Default is 10.0.
     umbral : float, optional
-        Umbral absoluto para la distancia en grafos de recurrencia. Si se proporciona,
-        se usa este valor en lugar de calcularlo usando umbral_percentil. Por defecto es None.
+        Absolute distance threshold for recurrence graphs. If provided, this value
+        is used instead of computing it with umbral_percentil. Default is None.
     random_state : int, optional
-        Semilla para la generación de números aleatorios. Se usa para garantizar
-        reproducibilidad en los cálculos de grafos de recurrencia. Por defecto es None.
+        Seed for random number generation. Used to ensure reproducibility in
+        recurrence graph calculations. Default is None.
     columnas_imf : list, optional
-        Lista de nombres de columnas a procesar. Si es None, se procesan todas las columnas
-        que empiezan con "IMF_" o son "Residuo". Por defecto es None.
+        List of column names to process. If None, all columns starting with "IMF_"
+        or named "Residuo" are processed. Default is None.
 
     Returns
     -------
     dict
-        Diccionario con información sobre los grafos generados. Las claves son los IDs de las
-        IMFs y los valores son diccionarios con información sobre cada tipo de grafo generado.
+        Dictionary with information about the generated graphs. Keys are IMF IDs
+        and values are dictionaries with information about each generated graph type.
 
     Examples
     --------
@@ -709,33 +708,33 @@ def obtener_grafos_all_imf(
     >>> proyecto_root = Path(__file__).parent.parent.parent.parent.parent
     >>> archivo_imfs = proyecto_root / "data" / "16dic25" / "msci_world_imfs.parquet"
     >>> carpeta_salida = proyecto_root / "data" / "16dic25" / "grafos"
-    >>> resultados = obtener_grafos_all_imf(
+    >>> resultados = build_all_imf_graphs(
     ...     df_imfs=str(archivo_imfs),
     ...     carpeta_salida_base=str(carpeta_salida),
     ...     random_state=42
     ... )
-    >>> print(f"Grafos generados para {len(resultados)} IMFs")
+    >>> print(f"Graphs generated for {len(resultados)} IMFs")
     """
-    # Cargar dataframe si se proporciona una ruta
+    # Load dataframe if a path is provided
     if isinstance(df_imfs, str):
         archivo_imfs = df_imfs
-        print(f"Cargando IMFs desde: {archivo_imfs}")
+        print(f"Loading IMFs from: {archivo_imfs}")
         if not Path(archivo_imfs).exists():
             raise FileNotFoundError(
-                f"El archivo {archivo_imfs} no existe. "
-                "Asegúrate de que el archivo esté en la ubicación correcta."
+                f"File {archivo_imfs} does not exist. "
+                "Make sure the file is in the correct location."
             )
         df_imfs = pd.read_parquet(archivo_imfs, engine="pyarrow")
     else:
         archivo_imfs = None
 
-    # Convertir carpeta_salida_base a Path
+    # Convert carpeta_salida_base to Path
     carpeta_salida_base = Path(carpeta_salida_base)
     carpeta_salida_base.mkdir(parents=True, exist_ok=True)
 
-    # Determinar qué columnas procesar
+    # Determine which columns to process
     if columnas_imf is None:
-        # Procesar todas las columnas que empiezan con "IMF_" o son "Residuo"
+        # Process all columns starting with "IMF_" or named "Residuo"
         columnas_imf = [
             col
             for col in df_imfs.columns
@@ -744,44 +743,44 @@ def obtener_grafos_all_imf(
 
     if not columnas_imf:
         raise ValueError(
-            "No se encontraron columnas de IMFs para procesar. "
-            "Asegúrate de que el dataframe contenga columnas con nombres como "
+            "No IMF columns found to process. "
+            "Make sure the dataframe contains columns named like "
             '"IMF_1", "IMF_2", etc., o "Residuo".'
         )
 
-    print(f"\nColumnas de IMFs a procesar: {columnas_imf}")
-    print(f"Total de IMFs: {len(columnas_imf)}")
+    print(f"\nIMF columns to process: {columnas_imf}")
+    print(f"Total IMFs: {len(columnas_imf)}")
 
-    # Si tenemos archivo_imfs, usarlo para las funciones de transformación
+    # If archivo_imfs is available, use it for the transformation functions
     if archivo_imfs is None:
-        # Si no tenemos archivo, necesitamos guardar temporalmente el dataframe
-        # o modificar las funciones para aceptar dataframes directamente
-        # Por ahora, asumimos que siempre se proporciona una ruta
+        # If no file path is available, we would need to save the dataframe temporarily
+        # or modify the functions to accept dataframes directly
+        # For now, we assume a path is always provided
         raise ValueError(
-            "Se debe proporcionar una ruta al archivo parquet, no un DataFrame directamente. "
-            "Las funciones de transformación requieren una ruta al archivo."
+            "A path to the parquet file must be provided, not a DataFrame directly. "
+            "Transformation functions require a path to the file."
         )
 
-    # Diccionario para almacenar resultados
+    # Dictionary to store results
     resultados = {}
 
-    # Procesar cada IMF
+    # Process each IMF
     for idx, id_imf in enumerate(columnas_imf, 1):
         print("\n" + "=" * 80)
-        print(f"PROCESANDO IMF {idx}/{len(columnas_imf)}: {id_imf}")
+        print(f"PROCESSING IMF {idx}/{len(columnas_imf)}: {id_imf}")
         print("=" * 80)
 
         resultados_imf = {}
 
-        # 1. Grafo HVG
+        # 1. HVG graph
         try:
-            print(f"\n--- Generando grafo HVG para {id_imf} ---")
+            print(f"\n--- Generating HVG graph for {id_imf} ---")
             carpeta_hvg = carpeta_salida_base / "hvg" / id_imf.lower()
             carpeta_hvg.mkdir(parents=True, exist_ok=True)
             archivo_salida_hvg = str(carpeta_hvg / f"grafo_hvg_{id_imf.lower()}")
 
-            grafo_hvg = obtener_grafo_hvg_imf(archivo_imfs=archivo_imfs, id_imf=id_imf)
-            guardar_grafo_data(
+            grafo_hvg = build_hvg_imf_graph(archivo_imfs=archivo_imfs, id_imf=id_imf)
+            save_graph_data(
                 data=grafo_hvg, archivo_salida=archivo_salida_hvg, id_imf=id_imf
             )
 
@@ -791,21 +790,21 @@ def obtener_grafos_all_imf(
                 "num_edges": grafo_hvg.num_edges,
                 "exito": True,
             }
-            print(f"✓ Grafo HVG generado exitosamente para {id_imf}")
+            print(f"✓ HVG graph generated successfully for {id_imf}")
 
         except Exception as e:
-            print(f"✗ Error al generar grafo HVG para {id_imf}: {e}")
+            print(f"✗ Error generating HVG graph for {id_imf}: {e}")
             resultados_imf["hvg"] = {"exito": False, "error": str(e)}
 
-        # 2. Grafo NVG
+        # 2. NVG graph
         try:
-            print(f"\n--- Generando grafo NVG para {id_imf} ---")
+            print(f"\n--- Generating NVG graph for {id_imf} ---")
             carpeta_nvg = carpeta_salida_base / "nvg" / id_imf.lower()
             carpeta_nvg.mkdir(parents=True, exist_ok=True)
             archivo_salida_nvg = str(carpeta_nvg / f"grafo_nvg_{id_imf.lower()}")
 
-            grafo_nvg = obtener_grafo_nvg_imf(archivo_imfs=archivo_imfs, id_imf=id_imf)
-            guardar_grafo_data(
+            grafo_nvg = build_nvg_imf_graph(archivo_imfs=archivo_imfs, id_imf=id_imf)
+            save_graph_data(
                 data=grafo_nvg, archivo_salida=archivo_salida_nvg, id_imf=id_imf
             )
 
@@ -815,15 +814,15 @@ def obtener_grafos_all_imf(
                 "num_edges": grafo_nvg.num_edges,
                 "exito": True,
             }
-            print(f"✓ Grafo NVG generado exitosamente para {id_imf}")
+            print(f"✓ NVG graph generated successfully for {id_imf}")
 
         except Exception as e:
-            print(f"✗ Error al generar grafo NVG para {id_imf}: {e}")
+            print(f"✗ Error generating NVG graph for {id_imf}: {e}")
             resultados_imf["nvg"] = {"exito": False, "error": str(e)}
 
-        # 3. Grafo de recurrencia
+        # 3. Recurrence graph
         try:
-            print(f"\n--- Generando grafo de recurrencia para {id_imf} ---")
+            print(f"\n--- Generating recurrence graph for {id_imf} ---")
             carpeta_recurrencia = (
                 carpeta_salida_base / "recurrencia" / id_imf.lower()
             )
@@ -832,7 +831,7 @@ def obtener_grafos_all_imf(
                 carpeta_recurrencia / f"grafo_recurrencia_{id_imf.lower()}"
             )
 
-            grafo_recurrencia = obtener_grafo_recurrencia_imf(
+            grafo_recurrencia = build_recurrence_imf_graph(
                 archivo_imfs=archivo_imfs,
                 id_imf=id_imf,
                 tau_max=tau_max,
@@ -841,7 +840,7 @@ def obtener_grafos_all_imf(
                 umbral=umbral,
                 random_state=random_state,
             )
-            guardar_grafo_data(
+            save_graph_data(
                 data=grafo_recurrencia,
                 archivo_salida=archivo_salida_recurrencia,
                 id_imf=id_imf,
@@ -856,17 +855,17 @@ def obtener_grafos_all_imf(
                 "umbral_recurrencia": grafo_recurrencia.umbral_recurrencia,
                 "exito": True,
             }
-            print(f"✓ Grafo de recurrencia generado exitosamente para {id_imf}")
+            print(f"✓ Recurrence graph generated successfully for {id_imf}")
 
         except Exception as e:
-            print(f"✗ Error al generar grafo de recurrencia para {id_imf}: {e}")
+            print(f"✗ Error generating recurrence graph for {id_imf}: {e}")
             resultados_imf["recurrencia"] = {"exito": False, "error": str(e)}
 
         resultados[id_imf] = resultados_imf
 
-    # Resumen final
+    # Final summary
     print("\n" + "=" * 80)
-    print("RESUMEN FINAL")
+    print("FINAL SUMMARY")
     print("=" * 80)
 
     total_imfs = len(resultados)
@@ -880,8 +879,8 @@ def obtener_grafos_all_imf(
         )
     )
 
-    print(f"Total de IMFs procesadas: {total_imfs}")
-    print(f"IMFs con todos los grafos generados exitosamente: {total_exitosos}")
+    print(f"Total IMFs processed: {total_imfs}")
+    print(f"IMFs with all graphs generated successfully: {total_exitosos}")
 
     for id_imf, imf_resultados in resultados.items():
         print(f"\n{id_imf}:")
@@ -889,11 +888,11 @@ def obtener_grafos_all_imf(
             if isinstance(info_grafo, dict) and info_grafo.get("exito", False):
                 print(
                     f"  ✓ {tipo_grafo.upper()}: "
-                    f"{info_grafo.get('num_nodes', 'N/A')} nodos, "
-                    f"{info_grafo.get('num_edges', 'N/A')} enlaces"
+                    f"{info_grafo.get('num_nodes', 'N/A')} nodes, "
+                    f"{info_grafo.get('num_edges', 'N/A')} edges"
                 )
             else:
-                error = info_grafo.get("error", "Error desconocido") if isinstance(info_grafo, dict) else "Error desconocido"
+                error = info_grafo.get("error", "Unknown error") if isinstance(info_grafo, dict) else "Unknown error"
                 print(f"  ✗ {tipo_grafo.upper()}: {error}")
 
     return resultados

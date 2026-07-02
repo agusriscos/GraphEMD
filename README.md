@@ -1,21 +1,17 @@
 # GraphEMD
 
-Repositorio del artículo *Empirical Mode Decomposition and Graph Transformation of Financial Series* (Agustín M. de los Riscos, Ana Lazcano, Julio E. Sandubete).
+Repository for the paper *Empirical Mode Decomposition and Graph Transformation of Financial Series* (Agustín M. de los Riscos, Ana Lazcano, Julio E. Sandubete).
 
-Código migrado desde [ARPTools](https://github.com/agusriscos/ARPTools) sin modificar el origen. El manuscrito LaTeX vive en el repositorio hermano `PAPER/`.
+## Contents
 
-## Contenido
-
-| Directorio | Descripción |
+| Directory | Description |
 |------------|-------------|
-| `src/python/GraphEMD/` | Librería: transformación IMF→grafo, señales sintéticas, modelo autoencoder |
-| `src/python/CommonUtils/` | Utilidades mínimas compartidas (`DictClass`) |
-| `scripts/GraphEMD/` | Pipelines del paper: panel empírico, emdsynth, exploración MSCI |
-| `scripts/16dic25/` | Scripts legacy MSCI World (dic-2025) |
-| `analysis/` | Cuadernos Jupyter de experimentos |
-| `data/` | Datos intermedios (no versionados; ver `data/README.md`) |
+| `src/python/GraphEMD/` | Library: IMF→graph transformation, synthetic signals, and other transformations |
+| `src/python/CommonUtils/` | Minimal shared utilities (`DictClass`) |
+| `scripts/` | Paper pipelines: empirical panel, emdsynth, MSCI exploration |
+| `analysis/` | Jupyter notebooks for experiments |
 
-## Instalación
+## Installation
 
 ```bash
 cd GraphEMD
@@ -25,34 +21,20 @@ pip install -r requirements.txt
 pip install -e src/python
 ```
 
-## Pipelines principales del paper
+## Main paper pipelines
 
 ```bash
-# Panel empírico completo (MSCI + XLE/XLP/XLV/XAUUSD)
-PYTHONPATH=src/python python scripts/GraphEMD/ejecutar_vmd_todos_activos.py
+# Full empirical panel (MSCI + XLE/XLP/XLV/XAUUSD)
+PYTHONPATH=src/python python scripts/run_vmd_all_assets.py
 
-# Benchmark sintético (EMD/EEMD/CEEMDAN/VMD)
-PYTHONPATH=src/python python scripts/GraphEMD/emdsynth/ejecutar_descomposiciones_emdsynth.py
+# Synthetic benchmark (EMD/EEMD/CEEMDAN/VMD)
+PYTHONPATH=src/python python scripts/emdsynth/run_emdsynth_decompositions.py
 
-# Figuras para el artículo (salida en PAPER/figures/)
-PYTHONPATH=src/python python scripts/GraphEMD/generar_figura_descomposicion_panel_activos.py
-PYTHONPATH=src/python python scripts/GraphEMD/generar_figura_ica_panel_activos.py
+# Figures for the paper (output in PAPER/figures/)
+PYTHONPATH=src/python python scripts/generate_decomposition_panel_figure.py
+PYTHONPATH=src/python python scripts/generate_ica_panel_figure.py
 ```
 
-## Datos existentes en ARPTools
+## License
 
-Si ya tienes artefactos generados en ARPTools, puedes copiarlos sin tocar el origen:
-
-```bash
-rsync -a ARPTools/data/20abr26/ GraphEMD/data/20abr26/
-rsync -a ARPTools/data/GraphEMD/ GraphEMD/data/GraphEMD/
-```
-
-## Relación con PAPER
-
-- Figuras del artículo: `../PAPER/figures/`
-- Scripts de póster: `../PAPER/scripts/` (apuntan a `GraphEMD/data/`)
-
-## Licencia
-
-Apache-2.0 — ver [LICENSE](LICENSE).
+Apache-2.0 — see [LICENSE](LICENSE).

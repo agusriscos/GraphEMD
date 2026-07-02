@@ -62,21 +62,21 @@ def series_to_window_list(
         window_num: Optional[int] = None, random_state: Optional[int] = None
 ) -> Iterable[Series]:
     """
-    Útil de generación de ventanas de datos.
+    Utility for generating data windows.
 
-    :param data: Datos
-    :param max_window_size: Tamaño máximo de ventana
-    :param min_window_size: Tamaño mínimo de ventana
-    :param mode: Hay dos modos de generación. 1 - Sin solape temporal. 2 - Con solape temporal
-    :param window_num: Obligatorio especificar al usar el modo 2. Número de ventanas.
-    :param random_state:  Estado aleatorio. None igual a sin semilla
-    :return: Lista de ventanas de los datos de entrada.
+    :param data: Input data
+    :param max_window_size: Maximum window size
+    :param min_window_size: Minimum window size
+    :param mode: Two generation modes. 1 - No temporal overlap. 2 - Temporal overlap
+    :param window_num: Required when using mode 2. Number of windows.
+    :param random_state: Random state. None means no seed
+    :return: List of windows from the input data.
     """
     if mode != 1 and mode != 2:
-        raise ValueError("Modo de generación de ventanas temporales no válido")
+        raise ValueError("Invalid temporal window generation mode")
 
     if mode == 2 and window_num is None:
-        raise ValueError("window_num es obligatorio cuando mode == 2")
+        raise ValueError("window_num is required when mode == 2")
 
     if random_state:
         seed(random_state)
@@ -92,7 +92,7 @@ def series_to_window_list(
             start_index += window_size
             windows.append(window)
     else:
-        assert window_num is not None, "window_num debe ser un entero cuando mode == 2"
+        assert window_num is not None, "window_num must be an integer when mode == 2"
         num_windows: int = window_num
         for _ in range(num_windows):
             max_start_index = max(0, len(sort_data) - 1)

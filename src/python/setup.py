@@ -8,8 +8,8 @@ setup(
     author="agusriscos",
     author_email="agusriscos@gmail.com",
     description=(
-        "Análisis de series temporales financieras mediante EMD/CEEMDAN, "
-        "reducción de dimensionalidad de IMFs y transformación a grafos."
+        "Financial time series analysis using EMD/CEEMDAN, "
+        "IMF dimensionality reduction, and graph transformation."
     ),
     include_package_data=True,
     install_requires=[

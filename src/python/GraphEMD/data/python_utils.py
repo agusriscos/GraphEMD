@@ -44,55 +44,54 @@ class DictClass(Enum):
         return cls.to_dict().get(item)
 
 
-def guardar_grafo_data(
+def save_graph_data(
     data: Data,
     archivo_salida: str,
     id_imf: str,
 ) -> None:
     """
-    Guarda un objeto Data de PyTorch Geometric en formato parquet y torch.
+    Save a PyTorch Geometric Data object in parquet and torch formats.
 
-    Guarda el objeto Data separando las features de nodos, edge_index en archivos
-    parquet, metadatos en formato CSV, además de una versión serializada completa
-    en formato torch.
+    Saves the Data object by splitting node features and edge_index into
+    parquet files, metadata as CSV, and a fully serialized version in torch format.
 
-    Si el objeto Data representa un grafo de recurrencia (detectado por la presencia
-    de los atributos tau, dim_embedding y algoritmo_distancia), también se guardan
-    los parámetros utilizados en el cálculo de la matriz de recurrencia.
+    If the Data object represents a recurrence graph (detected by the presence
+    of the tau, dim_embedding, and algoritmo_distancia attributes), the parameters
+    used to compute the recurrence matrix are also saved.
 
     Parameters
     ----------
     data : Data
-        Objeto Data de PyTorch Geometric a guardar.
+        PyTorch Geometric Data object to save.
     archivo_salida : str
-        Ruta base donde guardar los archivos (sin extensión).
+        Base path where files are saved (without extension).
     id_imf : str
-        Identificador de la IMF para los metadatos.
+        IMF identifier for metadata.
 
     Examples
     --------
     >>> from torch_geometric.data import Data
     >>> import torch
     >>> grafo = Data(x=torch.randn(10, 1), edge_index=torch.randint(0, 10, (2, 20)))
-    >>> guardar_grafo_data(grafo, "data/grafos/nvg/grafo_nvg_imf_1", "IMF_1")
+    >>> save_graph_data(grafo, "data/grafos/nvg/grafo_nvg_imf_1", "IMF_1")
     """
-    # Verificar que los componentes existen
+    # Verify that required components exist
     if data.x is None:
-        raise ValueError("El objeto Data no tiene features de nodos (x)")
+        raise ValueError("Data object has no node features (x)")
     if data.edge_index is None:
-        raise ValueError("El objeto Data no tiene edge_index")
+        raise ValueError("Data object has no edge_index")
 
-    # Crear directorio de salida si no existe
+    # Create output directory if it does not exist
     carpeta_salida = Path(archivo_salida).parent
     carpeta_salida.mkdir(parents=True, exist_ok=True)
 
-    print(f"\nGuardando grafo en: {archivo_salida}")
+    print(f"\nSaving graph to: {archivo_salida}")
 
-    # Convertir tensores a numpy arrays
+    # Convert tensors to numpy arrays
     node_features_np = data.x.cpu().numpy()
     edge_index_np = data.edge_index.cpu().numpy().T
 
-    # Guardar features de nodos
+    # Save node features
     num_features = int(node_features_np.shape[1])
     columnas_features = pd.Index([f"feature_{i}" for i in range(num_features)])
     df_node_features = pd.DataFrame(
@@ -100,29 +99,29 @@ def guardar_grafo_data(
         columns=columnas_features
     )
 
-    # Guardar edge_index
+    # Save edge_index
     df_edges = pd.DataFrame(
         data=edge_index_np,
         columns=["source", "target"]  # type: ignore[arg-type]
     )
 
-    # Guardar features de nodos
+    # Save node features
     archivo_features = str(Path(archivo_salida).with_suffix('')) + "_features.parquet"
     df_node_features.to_parquet(archivo_features, engine="pyarrow", index=False)
 
-    # Guardar edge_index
+    # Save edge_index
     archivo_edges = str(Path(archivo_salida).with_suffix('')) + "_edges.parquet"
     df_edges.to_parquet(archivo_edges, engine="pyarrow", index=False)
 
-    # Detectar si es un grafo de recurrencia
-    # Un grafo de recurrencia tiene los atributos: tau, dim_embedding y algoritmo_distancia
+    # Detect whether this is a recurrence graph
+    # A recurrence graph has the attributes: tau, dim_embedding, and algoritmo_distancia
     es_grafo_recurrencia = (
         hasattr(data, "tau")
         and hasattr(data, "dim_embedding")
         and hasattr(data, "algoritmo_distancia")
     )
 
-    # Guardar metadatos
+    # Save metadata
     num_nodes_int = int(data.num_nodes) if data.num_nodes is not None else 0
     num_edges_int = int(data.num_edges) if data.num_edges is not None else 0
     metadatos = {
@@ -134,7 +133,7 @@ def guardar_grafo_data(
         "archivo_edges": [Path(archivo_edges).name],
     }
 
-    # Si es un grafo de recurrencia, agregar los parámetros de la matriz de recurrencia
+    # If this is a recurrence graph, add recurrence matrix parameters
     if es_grafo_recurrencia:
         metadatos["tau"] = [int(data.tau)]
         metadatos["dim_embedding"] = [int(data.dim_embedding)]
@@ -148,22 +147,22 @@ def guardar_grafo_data(
     archivo_metadatos = str(Path(archivo_salida).with_suffix('')) + "_metadata.csv"
     df_metadatos.to_csv(archivo_metadatos, index=False)
 
-    # También guardamos una versión serializada del objeto Data completo
-    # usando torch.save para poder cargarlo directamente después
+    # Also save a serialized version of the full Data object
+    # using torch.save so it can be loaded directly later
     archivo_torch = str(Path(archivo_salida).with_suffix('')) + ".pt"
     torch.save(data, archivo_torch)
 
-    print(f"✓ Grafo guardado exitosamente:")
-    print(f"  - Features de nodos: {archivo_features}")
+    print(f"✓ Graph saved successfully:")
+    print(f"  - Node features: {archivo_features}")
     print(f"  - Edge index: {archivo_edges}")
-    print(f"  - Metadatos: {archivo_metadatos}")
-    print(f"  - Objeto Data completo (torch): {archivo_torch}")
+    print(f"  - Metadata: {archivo_metadatos}")
+    print(f"  - Full Data object (torch): {archivo_torch}")
 
-    # Tamaño de archivos
+    # File sizes
     tamaño_total = 0
     for archivo in [archivo_features, archivo_edges, archivo_metadatos, archivo_torch]:
         if Path(archivo).exists():
             tamaño = Path(archivo).stat().st_size / (1024 * 1024)
             tamaño_total += tamaño
             print(f"  - {Path(archivo).name}: {tamaño:.2f} MB")
-    print(f"  - Tamaño total: {tamaño_total:.2f} MB")
+    print(f"  - Total size: {tamaño_total:.2f} MB")

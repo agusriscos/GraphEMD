@@ -32,7 +32,7 @@ class VisualGraphDataset(Dataset):
     def __getitem__(self, idx: int) -> Data:
         file_path = self.data_dir + "/" + listdir(self.data_dir)[idx]
         raw = read_parquet(file_path, engine="pyarrow").values[:, 0]
-        # Copia escribible: ts2vg espera un buffer writable (pyarrow devuelve read-only).
+        # Writable copy: ts2vg expects a writable buffer (pyarrow returns read-only).
         data = np.asarray(raw, dtype=np.float64).copy()
 
         vg_build = self.visual_graph_builder.build(data)

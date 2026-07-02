@@ -49,7 +49,7 @@ class GraphEncoderAggregationConfig(DictClass):  # type: ignore[misc]
 
 
 class GraphEncoderConfig(DictClass):  # type: ignore[misc]
-    # Parámetros generales
+    # General parameters
     LATENT_DIM: int = 250  # type: ignore[assignment]
     CONVOLUTION_NUM_LAYERS: int = 3  # type: ignore[assignment]
     DROPOUT: float = 0  # type: ignore[assignment]
@@ -60,10 +60,10 @@ class GraphEncoderConfig(DictClass):  # type: ignore[misc]
     APPLY_GRAPH_MASK: bool = True  # type: ignore[assignment]
 
     # NO TOUCH! FIXED!!
-    # Parámetros de transmisión del mensaje entre nodos (node embeddings)
+    # Message-passing parameters between nodes (node embeddings)
     CONVOLUTION: Dict[str, Any] = GraphEncoderConvolutionConfig.to_dict()  # type: ignore[assignment]
     CONVOLUTION.update({"out_channels": LATENT_DIM})
-    # Parámetros de agregación (readout(node_embeddings) -> graph_embeddings) de nodos
+    # Aggregation parameters (readout(node_embeddings) -> graph_embeddings) for nodes
     AGGREGATION: Dict[str, Any] = GraphEncoderAggregationConfig.to_dict()  # type: ignore[assignment]
     AGGREGATION.update({"channels": LATENT_DIM})
 
