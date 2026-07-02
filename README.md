@@ -2,11 +2,18 @@
 
 Repository for the paper *Empirical Mode Decomposition and Graph Transformation of Financial Series* (Agustín M. de los Riscos, Ana Lazcano, Julio E. Sandubete).
 
-## Paper status
-The paper is in progress and scheduled for submission on **Wednesday, 8 July 2026** to [*Information Sciences*](https://www.sciencedirect.com/journal/information-sciences) (Elsevier, Q1). The code and data pipelines in this repository are already implemented and ready to reproduce the results.
+---
 
-Latest version of the paper (download): [emd_graphs_agustin_riscos.pdf](paper/emd_graphs_agustin_riscos.pdf)  
-Direct download (raw): https://github.com/agusriscos/GraphEMD/raw/main/paper/emd_graphs_agustin_riscos.pdf
+> [!IMPORTANT]
+> **Paper status**
+>
+> The paper is in progress and scheduled for **first submission on Wednesday, 8 July 2026** to [*Information Sciences*](https://www.sciencedirect.com/journal/information-sciences) (Elsevier, Q1).
+>
+> The code and data pipelines in this repository are already implemented and ready to reproduce the results.
+>
+> **Latest draft:** [emd_graphs_agustin_riscos.pdf](paper/emd_graphs_agustin_riscos.pdf) · [direct download](https://github.com/agusriscos/GraphEMD/raw/main/paper/emd_graphs_agustin_riscos.pdf)
+
+---
 
 ## Contents
 
