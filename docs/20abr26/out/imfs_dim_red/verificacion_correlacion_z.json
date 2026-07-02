@@ -1,0 +1,459 @@
+{
+  "umbral_pearson_max_abs": 1e-06,
+  "umbral_spearman_max_abs": 0.15,
+  "nota": "Se excluye Residuo. Pearson mide correlaci\u00f3n lineal (FastICA/PCA con blanqueamiento suelen dejar Pearson ~0 entre Z_*). Spearman mide asociaci\u00f3n mon\u00f3tona de rangos y puede ser distinta de cero sin contradecir ortogonalidad lineal.",
+  "resultados": [
+    {
+      "ruta": "/home/agusriscos/proyectos/ARPTools/docs/20abr26/out/imfs_dim_red/k3/fastica/imfs_reducidas.parquet",
+      "n_muestras": 3596,
+      "columnas_z": [
+        "Z_1",
+        "Z_2",
+        "Z_3"
+      ],
+      "pearson": {
+        "matriz": [
+          [
+            1.0,
+            -0.0,
+            -0.0
+          ],
+          [
+            -0.0,
+            1.0,
+            0.0
+          ],
+          [
+            -0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 1.5780233380044773e-15,
+        "media_abs_fuera_diagonal": 1.0265755205080517e-15,
+        "frobenius_offdiag": 2.7715462352537144e-15
+      },
+      "spearman": {
+        "matriz": [
+          [
+            1.0,
+            1.43198e-06,
+            -0.000124396199
+          ],
+          [
+            1.43198e-06,
+            1.0,
+            -0.038212045915
+          ],
+          [
+            -0.000124396199,
+            -0.038212045915,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 0.03821204591467774,
+        "media_abs_fuera_diagonal": 0.01277929136453341,
+        "frobenius_offdiag": 0.054040279966897115
+      },
+      "ok_pearson": true,
+      "ok_spearman": true
+    },
+    {
+      "ruta": "/home/agusriscos/proyectos/ARPTools/docs/20abr26/out/imfs_dim_red/k3/pca/imfs_reducidas.parquet",
+      "n_muestras": 3596,
+      "columnas_z": [
+        "Z_1",
+        "Z_2",
+        "Z_3"
+      ],
+      "pearson": {
+        "matriz": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            -0.0
+          ],
+          [
+            0.0,
+            -0.0,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 2.8502225258999314e-16,
+        "media_abs_fuera_diagonal": 2.5410909097625917e-16,
+        "frobenius_offdiag": 6.288556555167778e-16
+      },
+      "spearman": {
+        "matriz": [
+          [
+            1.0,
+            -0.018217511361,
+            0.063364751041
+          ],
+          [
+            -0.018217511361,
+            1.0,
+            -0.030116072483
+          ],
+          [
+            0.063364751041,
+            -0.030116072483,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 0.0633647510409787,
+        "media_abs_fuera_diagonal": 0.037232778294931136,
+        "frobenius_offdiag": 0.10250802131018293
+      },
+      "ok_pearson": true,
+      "ok_spearman": true
+    },
+    {
+      "ruta": "/home/agusriscos/proyectos/ARPTools/docs/20abr26/out/imfs_dim_red/k4/fastica/imfs_reducidas.parquet",
+      "n_muestras": 3596,
+      "columnas_z": [
+        "Z_1",
+        "Z_2",
+        "Z_3",
+        "Z_4"
+      ],
+      "pearson": {
+        "matriz": [
+          [
+            1.0,
+            -0.0,
+            0.0,
+            -0.0
+          ],
+          [
+            -0.0,
+            1.0,
+            -0.0,
+            -0.0
+          ],
+          [
+            0.0,
+            -0.0,
+            1.0,
+            0.0
+          ],
+          [
+            -0.0,
+            -0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 1.7625253623415162e-15,
+        "media_abs_fuera_diagonal": 1.0156256011698875e-15,
+        "frobenius_offdiag": 3.9589969761357645e-15
+      },
+      "spearman": {
+        "matriz": [
+          [
+            1.0,
+            0.004599716949,
+            0.039356587872,
+            -0.018141175136
+          ],
+          [
+            0.004599716949,
+            1.0,
+            -0.041577354548,
+            0.036267309966
+          ],
+          [
+            0.039356587872,
+            -0.041577354548,
+            1.0,
+            0.07004884457
+          ],
+          [
+            -0.018141175136,
+            0.036267309966,
+            0.07004884457,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 0.07004884456974271,
+        "media_abs_fuera_diagonal": 0.034998498173653664,
+        "frobenius_offdiag": 0.14035694104139548
+      },
+      "ok_pearson": true,
+      "ok_spearman": true
+    },
+    {
+      "ruta": "/home/agusriscos/proyectos/ARPTools/docs/20abr26/out/imfs_dim_red/k4/pca/imfs_reducidas.parquet",
+      "n_muestras": 3596,
+      "columnas_z": [
+        "Z_1",
+        "Z_2",
+        "Z_3",
+        "Z_4"
+      ],
+      "pearson": {
+        "matriz": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            -0.0,
+            -0.0
+          ],
+          [
+            0.0,
+            -0.0,
+            1.0,
+            -0.0
+          ],
+          [
+            0.0,
+            -0.0,
+            -0.0,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 2.8502225258999314e-16,
+        "media_abs_fuera_diagonal": 1.6912482680684239e-16,
+        "frobenius_offdiag": 6.803363152701165e-16
+      },
+      "spearman": {
+        "matriz": [
+          [
+            1.0,
+            -0.018217511361,
+            0.063364751041,
+            0.027780531152
+          ],
+          [
+            -0.018217511361,
+            1.0,
+            -0.030116072483,
+            0.004313039919
+          ],
+          [
+            0.063364751041,
+            -0.030116072483,
+            1.0,
+            -0.09553810603
+          ],
+          [
+            0.027780531152,
+            0.004313039919,
+            -0.09553810603,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 0.0955381060299753,
+        "media_abs_fuera_diagonal": 0.0398883353308818,
+        "frobenius_offdiag": 0.17419435779991882
+      },
+      "ok_pearson": true,
+      "ok_spearman": true
+    },
+    {
+      "ruta": "/home/agusriscos/proyectos/ARPTools/docs/20abr26/out/imfs_dim_red/k5/fastica/imfs_reducidas.parquet",
+      "n_muestras": 3596,
+      "columnas_z": [
+        "Z_1",
+        "Z_2",
+        "Z_3",
+        "Z_4",
+        "Z_5"
+      ],
+      "pearson": {
+        "matriz": [
+          [
+            1.0,
+            0.0,
+            -0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            -0.0,
+            0.0,
+            0.0
+          ],
+          [
+            -0.0,
+            -0.0,
+            1.0,
+            0.0,
+            -0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 2.9401768376280003e-15,
+        "media_abs_fuera_diagonal": 9.938780734016458e-16,
+        "frobenius_offdiag": 5.7372234387403145e-15
+      },
+      "spearman": {
+        "matriz": [
+          [
+            1.0,
+            0.003844843358,
+            -0.020113794308,
+            0.022955669216,
+            0.125461017855
+          ],
+          [
+            0.003844843358,
+            1.0,
+            -0.044204983156,
+            0.013940648743,
+            0.014969894246
+          ],
+          [
+            -0.020113794308,
+            -0.044204983156,
+            1.0,
+            -0.031244965369,
+            0.043351879969
+          ],
+          [
+            0.022955669216,
+            0.013940648743,
+            -0.031244965369,
+            1.0,
+            0.058902460302
+          ],
+          [
+            0.125461017855,
+            0.014969894246,
+            0.043351879969,
+            0.058902460302,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 0.12546101785451333,
+        "media_abs_fuera_diagonal": 0.03789901565232214,
+        "frobenius_offdiag": 0.22531946403529152
+      },
+      "ok_pearson": true,
+      "ok_spearman": true
+    },
+    {
+      "ruta": "/home/agusriscos/proyectos/ARPTools/docs/20abr26/out/imfs_dim_red/k5/pca/imfs_reducidas.parquet",
+      "n_muestras": 3596,
+      "columnas_z": [
+        "Z_1",
+        "Z_2",
+        "Z_3",
+        "Z_4",
+        "Z_5"
+      ],
+      "pearson": {
+        "matriz": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            -0.0,
+            -0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -0.0,
+            1.0,
+            -0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -0.0,
+            -0.0,
+            1.0,
+            -0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            -0.0,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 4.718337025208707e-16,
+        "media_abs_fuera_diagonal": 1.607614166834718e-16,
+        "frobenius_offdiag": 9.616847504054864e-16
+      },
+      "spearman": {
+        "matriz": [
+          [
+            1.0,
+            -0.018217511361,
+            0.063364751041,
+            0.027780531152,
+            -0.082461522386
+          ],
+          [
+            -0.018217511361,
+            1.0,
+            -0.030116072483,
+            0.004313039919,
+            -0.041230691516
+          ],
+          [
+            0.063364751041,
+            -0.030116072483,
+            1.0,
+            -0.09553810603,
+            0.00357291967
+          ],
+          [
+            0.027780531152,
+            0.004313039919,
+            -0.09553810603,
+            1.0,
+            -0.019189348633
+          ],
+          [
+            -0.082461522386,
+            -0.041230691516,
+            0.00357291967,
+            -0.019189348633,
+            1.0
+          ]
+        ],
+        "max_abs_fuera_diagonal": 0.0955381060299753,
+        "media_abs_fuera_diagonal": 0.03857844941903966,
+        "frobenius_offdiag": 0.21932946267038733
+      },
+      "ok_pearson": true,
+      "ok_spearman": true
+    }
+  ]
+}

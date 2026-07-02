@@ -1,0 +1,40 @@
+# Core dependencies
+numpy>=1.24.0
+pandas>=1.5.0
+pandas-datareader>=0.10.0
+yfinance>=0.2.0
+
+# Deep Learning
+# PyTorch con soporte CUDA 11.8 (compatible con CUDA Toolkit 11.8 y cuDNN 8.7.0.84)
+# Instalar desde el índice de PyTorch para CUDA 11.8
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+lightning>=2.0.0
+torch-geometric>=2.3.0
+
+# Visualization
+matplotlib>=3.7.0
+networkx>=3.0
+plotly>=5.18.0
+nbformat>=4.2.0
+ipython
+
+# Data processing
+scikit-learn
+scipy>=1.10.0
+statsmodels>=0.14.0
+pyarrow
+ts2vg
+EMD-signal>=1.6.0
+vmdpy>=0.2
+
+# Utilities
+tqdm
+pyspark
+requests>=2.31.0
+
+# Build tools
+setuptools
+
