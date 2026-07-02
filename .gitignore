@@ -32,6 +32,7 @@ scripts/exploration/out_msci_world_grafos/
 *.png
 *.html
 *.pdf
+!paper/emd_graphs_agustin_riscos.pdf
 
 # Logs
 *.log
