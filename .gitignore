@@ -19,7 +19,6 @@ build/
 .vscode/
 
 # Datos y artefactos generados (regenerables)
-data/
 outputs/
 scripts/out/
 scripts/emdsynth/out/
@@ -27,7 +26,6 @@ scripts/exploration/out_msci_world_grafos/
 
 # Binarios pesados
 *.pt
-*.parquet
 *.csv
 *.png
 *.html
