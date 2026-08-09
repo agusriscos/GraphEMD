@@ -1,13 +1,13 @@
 # GraphEMD
 
-Repository for the paper *Empirical Mode Decomposition and Graph Transformation of Financial Series* (Agustín M. de los Riscos, Ana Lazcano, Julio E. Sandubete).
+Repository for the paper *Representation-dependent topology of visibility and recurrence networks under adaptive decomposition and coordinate compression* (Agustín M. de los Riscos, Julio E. Sandubete, Ana Lazcano).
 
 ---
 
 > [!IMPORTANT]
 > **Paper status**
 >
-> The paper is in progress and scheduled for **first submission on Wednesday, 8 July 2026** to [*Information Sciences*](https://www.sciencedirect.com/journal/information-sciences) (Elsevier, Q1).
+> Manuscript submitted to [*Physica A: Statistical Mechanics and its Applications*](https://www.sciencedirect.com/journal/physica-a-statistical-mechanics-and-its-applications).
 >
 > The code and data pipelines in this repository are already implemented and ready to reproduce the results.
 >
@@ -27,27 +27,23 @@ Repository for the paper *Empirical Mode Decomposition and Graph Transformation 
 
 ## Input data (`data/`)
 
-Daily OHLCV price series (parquet) for the empirical panel, sourced from Yahoo Finance over **2012-01-12 → 2026-04-20**. ETFs are aligned to MSCI World trading days.
+The `data/` folder contains the **input price series** used in the empirical section of the paper. Each file is a daily OHLCV history downloaded from Yahoo Finance and stored in parquet format.
 
-| File | Yahoo symbol | Observations |
-|------|--------------|--------------|
-| `msci_world.parquet` | `^MSWORLD` | 3,587 |
-| `xle.parquet` | `XLE` | 3,587 |
-| `xlp.parquet` | `XLP` | 3,587 |
-| `xlv.parquet` | `XLV` | 3,587 |
-| `xauusd.parquet` | `GC=F` | 3,584 |
+All series share the common window **2012-01-12 → 2026-04-20**. ETFs (XLE, XLP, XLV) are aligned to MSCI World trading days (3,587 observations). COMEX gold futures (`GC=F`) has 3,584 observations over the same calendar range.
 
-Each file has columns `Open`, `High`, `Low`, `Close`, `Volume`, `Dividends`, `Stock Splits` (plus `Capital Gains` for MSCI World). Pipelines use `Close` as the input series.
+| File | Asset | Yahoo symbol | Observations |
+|------|-------|--------------|--------------|
+| `msci_world.parquet` | MSCI World index | `^MSWORLD` | 3,587 |
+| `xle.parquet` | Energy Select Sector SPDR (XLE) | `XLE` | 3,587 |
+| `xlp.parquet` | Consumer Staples Select Sector SPDR (XLP) | `XLP` | 3,587 |
+| `xlv.parquet` | Health Care Select Sector SPDR (XLV) | `XLV` | 3,587 |
+| `xauusd.parquet` | COMEX gold futures | `GC=F` | 3,584 |
 
-To regenerate from Yahoo Finance:
+Columns: `Open`, `High`, `Low`, `Close`, `Volume`, `Dividends`, `Stock Splits` (and `Capital Gains` for MSCI World). The `Close` price is the primary series used in the decomposition and graph pipelines.
 
-```bash
-PYTHONPATH=src/python python scripts/download_msci_world.py
-PYTHONPATH=src/python python scripts/xle_etf_analysis/01_download_xle.py
-PYTHONPATH=src/python python scripts/xlp_analysis/01_download_xlp.py
-PYTHONPATH=src/python python scripts/xlv_analysis/01_download_xlv.py
-PYTHONPATH=src/python python scripts/xauusd_analysis/01_download_xauusd.py
-```
+In the adaptive decomposition, the slow residual component is stored separately and is excluded from both FastICA and network construction. The final FastICA dimensions are \(k=(4,5,4,5,5)\) for MSCI World, XLE, XLP, XLV and GC=F, respectively.
+
+To regenerate the files from Yahoo Finance, use the download scripts under `scripts/` (e.g. `scripts/download_msci_world.py`, `scripts/xle_etf_analysis/01_download_xle.py`).
 
 ## Installation
 
@@ -62,7 +58,7 @@ pip install -e src/python
 ## Main paper pipelines
 
 ```bash
-# Full empirical panel (MSCI + XLE/XLP/XLV/XAUUSD)
+# Full empirical panel (MSCI + XLE/XLP/XLV/GC=F)
 PYTHONPATH=src/python python scripts/run_vmd_all_assets.py
 
 # Synthetic benchmark (EMD/EEMD/CEEMDAN/VMD)
